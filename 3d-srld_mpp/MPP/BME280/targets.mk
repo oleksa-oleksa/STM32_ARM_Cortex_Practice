@@ -1,0 +1,3 @@
+OBJS += MPP/BME280/BME280.o
+OBJS += MPP/BME280/bme280_driver.o
+-include MPP/BME280/*.d

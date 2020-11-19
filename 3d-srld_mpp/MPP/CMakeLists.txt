@@ -1,0 +1,8 @@
+add_subdirectory(BME280)
+add_subdirectory(BOARD)
+add_subdirectory(CC3100)
+add_subdirectory(DW1000)
+add_subdirectory(MPU9250)
+add_subdirectory(MQTT)
+add_subdirectory(SD_CARD)
+add_subdirectory(USB_CDC)

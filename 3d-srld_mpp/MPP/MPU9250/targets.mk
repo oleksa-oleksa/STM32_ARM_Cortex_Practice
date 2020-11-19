@@ -1,0 +1,5 @@
+OBJS += MPP/MPU9250/MPU9250.o
+OBJS += MPP/MPU9250/mpu9250_driver.o
+OBJS += MPP/MPU9250/mpu9250_math.o
+OBJS += MPP/MPU9250/mpu9250_serial.o
+-include MPP/MPU9250/*.d
