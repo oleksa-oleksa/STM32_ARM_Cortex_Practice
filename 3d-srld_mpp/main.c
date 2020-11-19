@@ -14,22 +14,22 @@ int main(void)
     // Freigabe von Interrupten
     init_board();
 
-    // Start der RTC  falls diese noch
-    // nicht initialisiert war wird
-    // die RTC mit der LSE-Taktquelle aktiviert
+    /* Start der Real Time Clock
+    if RTC was not started, will be initialize with
+     low-speed external 32.768 kHz oscillator (LSE)
+    */
     start_RTC();
 
-	// Start des WLAN Transceivers im Station Mode
-    // Anmeldung an der Fritzbox
-    CC3100_set_in_STA_Mode(0);
+	// Start WLAN Transceivers in Station Mode
+    //CC3100_set_in_STA_Mode(0);
 
-    // Initialisierung des CoCox Real Time Betriebssystems CoOS
+    // Initialize CoCox Real Time Operation System CoOS
     //CoInitOS ();
 
-    // Anmelden notwendiger applikationsspezifischer Task
+    // register the user task
     //CoCreateTask (...);
 
-    // Start des Betriebssystems CoOS
+    // Start CoOS
     //CoStartOS ();
 
     while(1)
