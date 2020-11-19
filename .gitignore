@@ -1,0 +1,24 @@
+# main elf and binary
+STM32F415RG.elf
+STM32F415RG.bin
+# Generated map
+STM32F415RG.map
+*.o
+*.d
+# CoIDE build dir
+STM32F15RG/
+# Doxygen
+html/
+latex/
+.doxygen
+Doxyfile
+# CMake build dirs
+build/
+cmake-build-debug/
+# CLion
+.idea/
+# Bear
+compile_commands.json
+# Toolchain
+gcc-arm-none-eabi-4_8-2014q3/
+stlink/
