@@ -1,4 +1,5 @@
 #include "main.h"
+#include "aufgabe.h"
 
 int main(void)
 {
@@ -19,18 +20,7 @@ int main(void)
      low-speed external 32.768 kHz oscillator (LSE)
     */
     start_RTC();
-
-	// Start WLAN Transceivers in Station Mode
-    //CC3100_set_in_STA_Mode(0);
-
-    // Initialize CoCox Real Time Operation System CoOS
-    //CoInitOS ();
-
-    // register the user task
-    //CoCreateTask (...);
-
-    // Start CoOS
-    //CoStartOS ();
+    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
 
     while(1)
 		{
