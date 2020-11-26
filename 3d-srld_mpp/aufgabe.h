@@ -20,14 +20,14 @@
 //#include "stm32f4xx_exti.h"
 //#include "stm32f4xx_flash.h"
 //#include "stm32f4xx_fsmc.h"
-//#include "stm32f4xx_gpio.h"
+#include "stm32f4xx_gpio.h"
 //#include "stm32f4xx_hash_md5.h"
 //#include "stm32f4xx_hash_sha1.h"
 //#include "stm32f4xx_hash.h"
 //#include "stm32f4xx_i2c.h"
 //#include "stm32f4xx_iwdg.h"
 //#include "stm32f4xx_pwr.h"
-//#include "stm32f4xx_rcc.h"
+#include "stm32f4xx_rcc.h"
 //#include "stm32f4xx_rng.h"
 //#include "stm32f4xx_rtc.h"
 //#include "stm32f4xx_sdio.h"
@@ -94,8 +94,9 @@
 //=========================================================================
 // Macros
 //=========================================================================
-
-
+#define GR_LED_ON (GPIO_ResetBits(GPIOB, GPIO_Pin_2))
+#define GR_LED_TOGGLE (GPIO_ToggleBits(GPIOB, GPIO_Pin_2))
+#define GR_LED_OFF (GPIO_SetBits(GPIOB, GPIO_Pin_2))
 
 //=========================================================================
 // Variablen
