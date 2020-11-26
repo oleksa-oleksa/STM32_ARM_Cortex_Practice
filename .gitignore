@@ -22,3 +22,4 @@ compile_commands.json
 # Toolchain
 gcc-arm-none-eabi-4_8-2014q3/
 stlink/
+.DS_Store
