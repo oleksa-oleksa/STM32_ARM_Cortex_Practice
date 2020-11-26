@@ -20,7 +20,7 @@ int main(void)
      low-speed external 32.768 kHz oscillator (LSE)
     */
     start_RTC();
-    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
+    //init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
 
     while(1)
 		{

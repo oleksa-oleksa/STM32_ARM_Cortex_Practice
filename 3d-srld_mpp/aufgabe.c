@@ -20,5 +20,5 @@ void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     // GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct
     GPIO_Init(GPIOx, &GPIO_InitStructure );
     // turn off LED
-    GPIO_WriteBit(GPIOx, GPIO_InitStructure.GPIO_Pin, Bit_RESET);
+    GPIO_WriteBit(GPIOx, GPIO_InitStructure.GPIO_Pin, Bit_SET);
 }
