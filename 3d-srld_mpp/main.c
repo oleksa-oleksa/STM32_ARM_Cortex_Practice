@@ -20,21 +20,20 @@ int main(void)
      low-speed external 32.768 kHz oscillator (LSE)
     */
     start_RTC();
-    //init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
+    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
 
     while(1)
 		{
 
-    	uwbranging_tick();
-    	wait_mSek(500);
+    	//uwbranging_tick();
+    	//wait_mSek(500);
+    	wait_uSek(1000000);
+    	GR_LED_ON;
+    	wait_uSek(1000000);
+    	//wait_mSek(500);
+    	GR_LED_OFF;
+    	//wait_mSek(500);
 
-    	// Abstände zu den 4 Ankerknoten werden in einer Endlosschleife
-    	// an den MQTT Broker geschickt
-    	//lokalisieren();
 
-    	// Abstände zu den 4 Ankerknoten werden einmalig bestimmt
-    	// und auf der Seriellen ausgegeben
-    	position();
-
-		}
+        }
 	}
