@@ -4,8 +4,6 @@
 int main(void)
 {
 
-
-
     // Initialisierung des Systems und des Clocksystems
     SystemInit();
 
@@ -16,8 +14,8 @@ int main(void)
 
     // Initialisierung aller Portleitungen und Schnittstellen
     // Freigabe von Interrupten
-    //init_board();
-    init_board_minimal_config();
+    init_board();
+    //init_board_minimal_config();
 
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
 
@@ -26,7 +24,7 @@ int main(void)
      low-speed external 32.768 kHz oscillator (LSE)
     */
     start_RTC();
-    GR_LED_OFF;
+    //GR_LED_ON;
 
     while(1)
 		{
