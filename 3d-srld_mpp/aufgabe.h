@@ -94,9 +94,9 @@
 //=========================================================================
 // Macros
 //=========================================================================
-#define GR_LED_ON (GPIO_ResetBits(GPIOB, GPIO_Pin_2))
+#define GR_LED_ON (GPIO_SetBits(GPIOB, GPIO_Pin_2))
 #define GR_LED_TOGGLE (GPIO_ToggleBits(GPIOB, GPIO_Pin_2))
-#define GR_LED_OFF (GPIO_SetBits(GPIOB, GPIO_Pin_2))
+#define GR_LED_OFF (GPIO_ResetBits(GPIOB, GPIO_Pin_2))
 
 //=========================================================================
 // Variablen
@@ -108,8 +108,6 @@
 // Funktionen
 //=========================================================================
 void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-
-void init_board_minimal_config();
 
 //=========================================================================
 #endif

@@ -108,11 +108,13 @@ void SysTick_Handler(void)
 
 	//======================================================================
 	// LED zyklisch schalten
+	/*
 	if ( stc_led >= 500 )
 		{
 			LED_GR_TOGGLE;
 			stc_led = 0;
 		}
+	 */
 }
 
 
