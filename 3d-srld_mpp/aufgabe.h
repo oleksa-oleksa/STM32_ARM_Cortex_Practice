@@ -109,6 +109,7 @@
 //=========================================================================
 void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
+void init_board_minimal_config();
 
 //=========================================================================
 #endif

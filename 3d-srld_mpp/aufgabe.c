@@ -1,4 +1,5 @@
 #include "aufgabe.h"
+#include "main.h"
 GPIO_InitTypeDef GPIO_InitStructure;
 
 /* Init the GPIO as Output Push Pull with Pull-up
@@ -12,13 +13,23 @@ void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin;
     GPIO_InitStructure.GPIO_Mode =   GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd =   GPIO_PuPd_DOWN;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_OType =  GPIO_OType_PP;
 
 
     // GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct
     GPIO_Init(GPIOx, &GPIO_InitStructure );
     // turn off LED
-    GPIO_WriteBit(GPIOx, GPIO_InitStructure.GPIO_Pin, Bit_RESET);
+    //GPIO_WriteBit(GPIOx, GPIO_InitStructure.GPIO_Pin, Bit_RESET);
+    //GPIO_ResetBits(GPIOx, GPIO_InitStructure.GPIO_Pin);
+}
+
+void init_board_minimal_config() {
+    init_POWER_ON();
+    CC3100_init();
+    CC3100_fw_check();
+
+    // sound signal at start
+    beep(4000,200,0);
 }
