@@ -90,16 +90,16 @@ void init_board(void)
 	//==========LED
 	//=====================================================================
 	//init_LED();
-	usart2_send("=> LED\r\n");
+	//usart2_send("=> LED\r\n");
 
 	//=====================================================================
 	// 	Tasten Taster1 () Taster2 ()
 	//=====================================================================
-	init_TASTER1();
-	init_TASTER2();
-	init_Taster1_IRQ8();
-	init_Taster2_IRQ5();
-	usart2_send("=> TASTER\r\n");
+	//init_TASTER1();
+	//init_TASTER2();
+	//init_Taster1_IRQ8();
+	//init_Taster2_IRQ5();
+	//usart2_send("=> TASTER\r\n");
 
 	//=====================================================================
 	//==========Signalgeber
