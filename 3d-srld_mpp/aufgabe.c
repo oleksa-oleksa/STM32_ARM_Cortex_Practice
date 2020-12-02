@@ -27,11 +27,12 @@ void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 void init_button(uint16_t GPIO_Pin)
 {
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE );
-     RCC_AHB1PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE );
+    RCC_AHB1PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE );
+
     GPIO_InitTypeDef GPIO_ButtonInitStructure;
     GPIO_StructInit (&GPIO_ButtonInitStructure);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin; // PC8
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin;
     GPIO_InitStructure.GPIO_Mode =   GPIO_Mode_IN;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; //we do not need anything faster as people are not so fast to press a button
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
