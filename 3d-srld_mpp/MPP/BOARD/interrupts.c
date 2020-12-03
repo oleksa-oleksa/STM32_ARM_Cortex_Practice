@@ -64,7 +64,21 @@ void SysTick_Handler(void)
 	stc1++;
 	stc2++;
 
+    //======================================================================
     // Assignment 3: control LED with Clock System
+    // TASK 3: Time delay with "timer" variable
+    // blocking wait with while-loop
+    //int timer = 5; // 500 ms
+    //while (timer ){;} // wait
+    //LED_GR_OFF;
+    //timer = 30; // 3 seconds
+    //LED_GR_ON;
+    //while (timer ){;} // wait
+
+/*  //======================================================================
+    // Assignment 3: control LED with Clock System
+    // TASK 2: for 0.5 sec ist LED ON and for 3 sec is ON
+
     static  unsigned  long  SysTickCounter = 0;
     SysTickCounter ++;
     // 500 ms
@@ -74,7 +88,7 @@ void SysTick_Handler(void)
     }
     else if (SysTickCounter  == 500) {
         LED_GR_OFF;
-    }
+    }*/
 	//======================================================================
 	// DW1000 Timeout
 	systickcounter += 1;
