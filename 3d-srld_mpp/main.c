@@ -1,5 +1,9 @@
 #include "main.h"
 #include "aufgabe.h"
+#include <stdint.h>
+
+// global variable
+int32_t timer = 0;
 
 int main(void)
 {
@@ -27,6 +31,17 @@ int main(void)
     */
     start_RTC();
 
-    led_on_off();
+
+    while(1){
+        // led_on_off();
+        
+        timer = 500;
+        while (timer) {;}
+        LED_GR_OFF;
+
+        timer = 3000; // 3 seconds
+        while (timer) {;}
+        LED_GR_ON;
+    }
     return 0; // to make the warning stop
 	}

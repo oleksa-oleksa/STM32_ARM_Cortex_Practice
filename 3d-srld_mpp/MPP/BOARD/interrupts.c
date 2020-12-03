@@ -68,12 +68,8 @@ void SysTick_Handler(void)
     // Assignment 3: control LED with Clock System
     // TASK 3: Time delay with "timer" variable
     // blocking wait with while-loop
-    //int timer = 5; // 500 ms
-    //while (timer ){;} // wait
-    //LED_GR_OFF;
-    //timer = 30; // 3 seconds
-    //LED_GR_ON;
-    //while (timer ){;} // wait
+
+    timer--;
 
 /*  //======================================================================
     // Assignment 3: control LED with Clock System
@@ -81,7 +77,7 @@ void SysTick_Handler(void)
 
     static  unsigned  long  SysTickCounter = 0;
     SysTickCounter ++;
-    // 500 ms
+    // 3000 ms turned on + 500 ms was turned off = 3500 ms
     if (SysTickCounter  == 3500) {
         LED_GR_ON;
         SysTickCounter = 0;
