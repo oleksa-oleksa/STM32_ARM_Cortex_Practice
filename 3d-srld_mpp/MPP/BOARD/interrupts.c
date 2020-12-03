@@ -64,6 +64,17 @@ void SysTick_Handler(void)
 	stc1++;
 	stc2++;
 
+    // Assignment 3: control LED with Clock System
+    static  unsigned  long  SysTickCounter = 0;
+    SysTickCounter ++;
+    // 500 ms
+    if (SysTickCounter  == 3500) {
+        LED_GR_ON;
+        SysTickCounter = 0;
+    }
+    else if (SysTickCounter  == 500) {
+        LED_GR_OFF;
+    }
 	//======================================================================
 	// DW1000 Timeout
 	systickcounter += 1;
