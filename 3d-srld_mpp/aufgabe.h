@@ -43,7 +43,7 @@
 //#########################################################################
 //#include "BME280.h"
 //=========================================================================
-//#include "beeper.h"
+#include "beeper.h"
 //#include "client_ftp.h"
 //#include "client_ntp.h"
 //#include "global.h"
@@ -109,5 +109,9 @@
 //=========================================================================
 void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
+void init_button_1();
+void init_button_2();
+
+void led_on_off();
 //=========================================================================
 #endif
