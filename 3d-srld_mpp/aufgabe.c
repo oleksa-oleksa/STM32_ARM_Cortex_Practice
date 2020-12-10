@@ -3,6 +3,10 @@
 #include <string.h>
 
 GPIO_InitTypeDef GPIO_InitStructure;
+char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
+char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
+unsigned char usart2_busy = 0;
+
 
 /* Init the GPIO as Output Push Pull with Pull-up
  * on selected Port with selected Pin
@@ -128,19 +132,28 @@ void usart2_send_text(char *chars)
      * */
 void usart2_2_print(char *chars)
 {
-    char msg[] = ": Cora und Oleksandra, Frohe Weihnachten!!\r\n";
-
-    //char usart2_rx_buffer[50];
-    char usart2_tx_buffer[strlen(msg) + 100];
-
-    int i = 0;
-    for ( i = 0; i < strlen ( chars ); i ++)
+    char msg[strlen(chars) + 5];
+    if (chars)
     {
-        strcat(usart2_tx_buffer, msg);
+        int length = strlen(msg);
+        if (length <= USART2_TX_BUFFERSIZE_50)
+        {
+            // Wait for the last transfer to complete
+            //while (usart2_busy && DMA_GetFlagStatus(DMA1_Stream6, DMA_FLAG_TCIF6) == RESET) asm("");
+            //DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
 
-        usart2_send(usart2_tx_buffer);
+            // The USART is active
+            usart2_busy = 1;
 
-        //USART_SendData(USART2, chars [ i ]);
+            // Copy the string into the TX buffer
+            strcpy(usart2_tx_buffer, chars);
+
+            // Enter the package length (nested so that only one calculation is necessary)
+            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short)length);
+
+            // Activate the DMA transfer
+            DMA_Cmd(DMA1_Stream6, ENABLE);
+        }
     }
 }
 

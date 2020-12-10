@@ -43,7 +43,7 @@ int main(void)
         //usart2_send_text("\r\n");
 
         // Assignment 4, task 2.5
-        usart2_2_print(&counter_char);
+        usart2_2_print(": Cora und Oleksandra, Frohe Weihnachten!!\r\n");
 
         counter = (counter +1) % 10;
 

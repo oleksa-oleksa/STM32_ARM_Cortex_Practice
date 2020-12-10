@@ -97,6 +97,9 @@
 #define GR_LED_ON (GPIO_SetBits(GPIOB, GPIO_Pin_2))
 #define GR_LED_TOGGLE (GPIO_ToggleBits(GPIOB, GPIO_Pin_2))
 #define GR_LED_OFF (GPIO_ResetBits(GPIOB, GPIO_Pin_2))
+#define USART2_TX_BUFFERSIZE_50 50
+#define USART2_RX_BUFFERSIZE_50 1024
+
 
 //=========================================================================
 // Variablen
