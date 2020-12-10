@@ -34,7 +34,7 @@ int main(void)
 
     while(1){
         // led_on_off();
-        
+
         timer = 500;
         while (timer) {;}
         LED_GR_OFF;
