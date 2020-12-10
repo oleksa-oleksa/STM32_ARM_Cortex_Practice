@@ -126,19 +126,10 @@ void usart2_send_text(char *chars)
     }
 }
 
-/* generates a character string in an endless loop with a running index,
-     * a text and the control character sequence '\ r \ n'
-     * at the end of the character string.
-     * */
 void usart2_2_print(char *chars)
 {
-    char msg[strlen(chars) + 5];
-    for (int i = 0; i < strlen ( chars ); i ++)
-    {
-        USART_SendData(USART2, chars[i]);
-
-        while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
-    }
+    // DRY: do not repeat yourself
+    usart2_send_text(chars);
 }
 
 void our_init_board(){
