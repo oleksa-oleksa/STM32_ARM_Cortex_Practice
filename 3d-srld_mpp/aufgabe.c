@@ -133,27 +133,11 @@ void usart2_send_text(char *chars)
 void usart2_2_print(char *chars)
 {
     char msg[strlen(chars) + 5];
-    if (chars)
+    for (int i = 0; i < strlen ( chars ); i ++)
     {
-        int length = strlen(msg);
-        if (length <= USART2_TX_BUFFERSIZE_50)
-        {
-            // Wait for the last transfer to complete
-            //while (usart2_busy && DMA_GetFlagStatus(DMA1_Stream6, DMA_FLAG_TCIF6) == RESET) asm("");
-            //DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
+        USART_SendData(USART2, chars[i]);
 
-            // The USART is active
-            usart2_busy = 1;
-
-            // Copy the string into the TX buffer
-            strcpy(usart2_tx_buffer, chars);
-
-            // Enter the package length (nested so that only one calculation is necessary)
-            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short)length);
-
-            // Activate the DMA transfer
-            DMA_Cmd(DMA1_Stream6, ENABLE);
-        }
+        while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
     }
 }
 

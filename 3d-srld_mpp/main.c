@@ -39,11 +39,10 @@ int main(void)
     while(1){
         counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
         // Assignment 4 task 2.3.
-        //usart2_send_text(&counter_char);
-        //usart2_send_text("\r\n");
-
+        usart2_send_text(&counter_char);
         // Assignment 4, task 2.5
-        usart2_2_print(": Cora und Oleksandra, Frohe Weihnachten!!\r\n");
+        usart2_2_print(": Cora und Oleksandra, Frohe Weihnachten!!");
+        usart2_send_text("\r\n");
 
         counter = (counter +1) % 10;
 
