@@ -38,9 +38,15 @@ int main(void)
 
     while(1){
         counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
-        usart2_send_text(&counter_char);
-        usart2_send_text("\r\n");
+        // Assignment 4 task 2.3.
+        //usart2_send_text(&counter_char);
+        //usart2_send_text("\r\n");
+
+        // Assignment 4, task 2.5
+        usart2_2_print(&counter_char);
+
         counter = (counter +1) % 10;
+
         timer = 1000; // 1 second
         while (timer) {;}
     }

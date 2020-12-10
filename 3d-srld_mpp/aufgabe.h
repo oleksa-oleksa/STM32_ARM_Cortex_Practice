@@ -119,5 +119,7 @@ void led_on_off();
 
 void init_usart_2_tx();
 void usart2_send_text(char *chars);
+void usart2_2_print();
+
 //=========================================================================
 #endif

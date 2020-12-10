@@ -1,5 +1,7 @@
 #include "aufgabe.h"
 #include "main.h"
+#include <string.h>
+
 GPIO_InitTypeDef GPIO_InitStructure;
 
 /* Init the GPIO as Output Push Pull with Pull-up
@@ -81,11 +83,11 @@ void init_usart_2_tx() {
     GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 
-	// Clocksystem aktivieren
+	// activate clock system
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-	// GPIOA Configuration:  USART2 TX on PA2 RX on PA3
+	// configure GPIOA:  USART2 TX on PA2 RX on PA3
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
@@ -93,10 +95,10 @@ void init_usart_2_tx() {
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-	// Alternative Funktion festlegen
+	// Alternative Function ion GPIO
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
 
-	// USART Initialisieren
+	// USART init
 	USART_InitStructure.USART_BaudRate = 921600;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1; 
@@ -105,7 +107,7 @@ void init_usart_2_tx() {
 	USART_InitStructure.USART_Mode = USART_Mode_Tx;
 	USART_Init(USART2, &USART_InitStructure);
 
-	// USART Deaktivieren
+	// USART deactivate
 	USART_Cmd(USART2, ENABLE);
 }
 
@@ -117,6 +119,28 @@ void usart2_send_text(char *chars)
         USART_SendData(USART2, chars [ i ]);
 
     while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
+    }
+}
+
+/* generates a character string in an endless loop with a running index,
+     * a text and the control character sequence '\ r \ n'
+     * at the end of the character string.
+     * */
+void usart2_2_print(char *chars)
+{
+    char msg[] = ": Cora und Oleksandra, Frohe Weihnachten!!\r\n";
+
+    //char usart2_rx_buffer[50];
+    char usart2_tx_buffer[strlen(msg) + 100];
+
+    int i = 0;
+    for ( i = 0; i < strlen ( chars ); i ++)
+    {
+        strcat(usart2_tx_buffer, msg);
+
+        usart2_send(usart2_tx_buffer);
+
+        //USART_SendData(USART2, chars [ i ]);
     }
 }
 
