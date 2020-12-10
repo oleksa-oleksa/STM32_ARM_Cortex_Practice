@@ -4,6 +4,8 @@
 
 // global variable
 int32_t timer = 0;
+int counter;
+char counter_char;
 
 int main(void)
 {
@@ -18,7 +20,9 @@ int main(void)
 
     // Initialisierung aller Portleitungen und Schnittstellen
     // Freigabe von Interrupten
-    init_board();
+    our_init_board();
+
+    beep(4000,200,0); // test beep
 
     // assignment 2
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
@@ -29,19 +33,16 @@ int main(void)
     if RTC was not started, will be initialize with
      low-speed external 32.768 kHz oscillator (LSE)
     */
-    start_RTC();
-
+    //start_RTC();
+    counter=0;
 
     while(1){
-        // led_on_off();
-
-        timer = 500;
+        counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
+        usart2_send_text(&counter_char);
+        usart2_send_text("\r\n");
+        counter = (counter +1) % 10;
+        timer = 1000; // 1 second
         while (timer) {;}
-        LED_GR_OFF;
-
-        timer = 3000; // 3 seconds
-        while (timer) {;}
-        LED_GR_ON;
     }
     return 0; // to make the warning stop
 	}
