@@ -76,3 +76,57 @@ void led_on_off()
 
     }
 }
+
+void init_usart_2_tx() {
+    GPIO_InitTypeDef GPIO_InitStructure;
+	USART_InitTypeDef USART_InitStructure;
+
+	// Clocksystem aktivieren
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+
+	// GPIOA Configuration:  USART2 TX on PA2 RX on PA3
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	// Alternative Funktion festlegen
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+
+	// USART Initialisieren
+	USART_InitStructure.USART_BaudRate = 921600;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+	USART_InitStructure.USART_StopBits = USART_StopBits_1; 
+	USART_InitStructure.USART_Parity = USART_Parity_No;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_Mode = USART_Mode_Tx;
+	USART_Init(USART2, &USART_InitStructure);
+
+	// USART Deaktivieren
+	USART_Cmd(USART2, ENABLE);
+}
+
+void usart2_send_text(char *chars)
+{
+    int i = 0;
+    for ( i = 0; i < strlen ( chars ); i ++)
+    {
+        USART_SendData(USART2, chars [ i ]);
+
+    while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
+    }
+}
+
+void our_init_board(){
+    init_POWER_ON();
+
+    init_usart_2_tx();
+	usart2_send_text("____Start____\r\n");
+
+    init_BEEPER();
+    usart2_send_text("=> BEEPER\r\n");
+    usart2_send_text("_____________\r\n");
+}

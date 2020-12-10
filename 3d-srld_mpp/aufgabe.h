@@ -101,17 +101,23 @@
 //=========================================================================
 // Variablen
 //=========================================================================
-
+//extern int counter;
+//extern char counter_char;
 
 
 //=========================================================================
 // Funktionen
 //=========================================================================
+void our_init_board();
+
 void init_leds(uint32_t RCC_AHB1Periph, GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 void init_button_1();
 void init_button_2();
 
 void led_on_off();
+
+void init_usart_2_tx();
+void usart2_send_text(char *chars);
 //=========================================================================
 #endif
