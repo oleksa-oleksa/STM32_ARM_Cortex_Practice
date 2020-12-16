@@ -37,19 +37,19 @@ int main(void)
     counter=0;
 
     while(1){
-        counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
+        //counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
         // Assignment 4 task 2.3.
         //usart2_send_text(&counter_char);
         // Assignment 4, task 2.5
         //usart2_print(": Cora und Oleksandra, Frohe Weihnachten!!");
         //usart2_send_text("\r\n");
+        //counter = (counter +1) % 10;
 
         // for assignment 4, task 2.6 the previous lines
-        // schould be commented to free uart
+        // should be commented to free uart
         // from looped output
         usart2_get_char();
 
-        counter = (counter +1) % 10;
 
         timer = 1000; // 1 second
         while (timer) {;}

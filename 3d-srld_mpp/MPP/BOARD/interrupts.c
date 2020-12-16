@@ -386,13 +386,17 @@ void ADC_IRQHandler(void){
     	usart2_send("ADC_IRQn\r\n");
 }
 
-
+//Interrupt handler declaration
+// In my development environment,
+// this handler is declared in my startup assembly file as a weak reference to Default_Handle
+// so as long as I provide a new declaration and implementation of this interrupt handler,
+// the weak reference will be replaced
 //=========================================================================
 void USART2_IRQHandler(void)
 {
 	//===== USART2
 	USART2_IRQ();
-    //usart2_send("USART2_IRQn\r\n");
+    usart2_send("USART2_IRQn\r\n");
 }
 
 

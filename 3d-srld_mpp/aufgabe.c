@@ -115,6 +115,45 @@ void init_usart_2_tx() {
 	USART_Cmd(USART2, ENABLE);
 }
 
+void init_usart_2_tx_rx() {
+    GPIO_InitTypeDef GPIO_InitStructure;
+    USART_InitTypeDef USART_InitStructure;
+
+    // activate clock system
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+
+    USART_InitStructure.USART_BaudRate = 921600;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(USART2, &USART_InitStructure);
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    // Enable the USART RX Interrupt
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+
+    NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    USART_Cmd(USART2, ENABLE);
+}
+
 void usart2_send_text(char *chars)
 {
     int i = 0;
@@ -135,8 +174,12 @@ void usart2_print(char *chars)
 void our_init_board(){
     init_POWER_ON();
 
-    init_usart_2_tx();
-	usart2_send_text("____Start____\r\n");
+    //init_usart_2_tx();
+    init_usart_2_tx_rx();
+
+    usart2_send_text("____Start____\r\n");
+    usart2_send_text("=> UART RX/TX \r\n");
+    usart2_send_text("_____________\r\n");
 
     init_BEEPER();
     usart2_send_text("=> BEEPER\r\n");
@@ -147,12 +190,18 @@ void usart2_get_char() {
 
     /* Receive Data */
     char rx_led[1024];
-    strcpy(rx_led, USART_ReceiveData(USART2));
+    long int raw_input;
+
+    //strcpy(rx_led, USART_ReceiveData(USART2));
+    usart2_print(usart2_rx_buffer);
+    usart2_send_text("\r\n");
+
+
 
     //int number = (int)rx_led[0] - 48;
     //usart2_print("Got:");
-    usart2_print(rx_led);
-    usart2_send_text("\r\n");
+    //usart2_print(rx_led);
+    //usart2_send_text("\r\n");
 
 
     //if (number == 1) {
