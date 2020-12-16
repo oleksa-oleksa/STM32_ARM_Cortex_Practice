@@ -257,7 +257,9 @@ void USART2_IRQ_LED_CONTROL(void)
             }
 
             else {
-                strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
+                //strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
+                // Assignment 4, task 2.7
+                sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
             }
 
             usart2_send(usart2_tx_buffer);
