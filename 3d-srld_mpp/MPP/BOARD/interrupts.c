@@ -395,8 +395,8 @@ void ADC_IRQHandler(void){
 void USART2_IRQHandler(void)
 {
 	//===== USART2
-	USART2_IRQ();
     usart2_send("USART2_IRQn\r\n");
+    USART2_IRQ();
 }
 
 

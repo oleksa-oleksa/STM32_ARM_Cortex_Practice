@@ -116,22 +116,29 @@ void init_usart_2_tx() {
 }
 
 void init_usart_2_tx_rx() {
+    // Initialisierungsstrukturen vorbereiten
     GPIO_InitTypeDef GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
+    DMA_InitTypeDef DMA_InitStructure;
 
-    // activate clock system
+    // Clocksystem aktivieren
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+    // GPIOA Configuration:  USART2 TX on PA2 RX on PA3
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
+    // Alternative Funktion festlegen
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
 
+    // USART Initialisieren
     USART_InitStructure.USART_BaudRate = 921600;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -140,18 +147,54 @@ void init_usart_2_tx_rx() {
     USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
     USART_Init(USART2, &USART_InitStructure);
 
-    NVIC_InitTypeDef NVIC_InitStructure;
+    // Deinitialisiere die DMA
+    DMA_DeInit(DMA1_Stream6); //USART2_TX_DMA_STREAM
 
-    // Enable the USART RX Interrupt
+    // Structure auf default setzen
+    DMA_StructInit(&DMA_InitStructure);
+
+    // Deaktiviere den DMA Transfer
+    DMA_Cmd(DMA1_Stream6, DISABLE);
+
+    //// Lösche das DMA-Flag
+    DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
+
+    // Lege die Grundinitialisierung fest
+    DMA_InitStructure.DMA_BufferSize = 0;
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable ;
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull ;
+    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single ;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&(USART2->DR));
+    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
+    DMA_InitStructure.DMA_Channel = DMA_Channel_4;
+    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)usart2_tx_buffer;
+    DMA_Init(DMA1_Stream6, &DMA_InitStructure);
+
+    // Fordere RX und TX an
+    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 
+    // USART Deaktivieren
+    USART_Cmd(USART2, ENABLE);
+
+    NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    USART_Cmd(USART2, ENABLE);
+    NVIC_EnableIRQ(USART2_IRQn);
+
 }
 
 void usart2_send_text(char *chars)

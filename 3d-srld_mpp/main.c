@@ -48,8 +48,9 @@ int main(void)
         // for assignment 4, task 2.6 the previous lines
         // should be commented to free uart
         // from looped output
-        usart2_get_char();
 
+        // We set NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+        // and implement everyrhing in IRQ_Handler
 
         timer = 1000; // 1 second
         while (timer) {;}
