@@ -1,4 +1,5 @@
 #include "interrupts.h"
+#include "usart.h"
 
 void hard_fault_handler_c(unsigned int * hardfault_args);
 
@@ -74,7 +75,6 @@ void SysTick_Handler(void)
 /*  //======================================================================
     // Assignment 3: control LED with Clock System
     // TASK 2: for 0.5 sec ist LED ON and for 3 sec is ON
-
     static  unsigned  long  SysTickCounter = 0;
     SysTickCounter ++;
     // 3000 ms turned on + 500 ms was turned off = 3500 ms
@@ -85,7 +85,27 @@ void SysTick_Handler(void)
     else if (SysTickCounter  == 500) {
         LED_GR_OFF;
     }*/
+
 	//======================================================================
+    // We will control LED toggle in SysTick also
+    // because otherwise with while(1)-loop will be blocked
+    // the UART-2 IRQ Handler
+    static  unsigned  long  SysTickCounter = 0;
+    //usart2_send("TickIRQ Top\r\n");
+    SysTickCounter++;
+    if (SysTickCounter  == led_timer) {
+        GR_LED_TOGGLE;
+        usart2_send("LED toggled\r\n");
+    }
+    // overflow
+    // if timer is set to the lower number
+    // we hve to catch the new lower number outside the toogle
+    if (SysTickCounter  >= led_timer) {
+        SysTickCounter = 0;
+    }
+    //======================================================================
+
+
 	// DW1000 Timeout
 	systickcounter += 1;
 	if ( stc0 >= 20 )
@@ -395,8 +415,10 @@ void ADC_IRQHandler(void){
 void USART2_IRQHandler(void)
 {
 	//===== USART2
-    usart2_send("USART2_IRQn\r\n");
-    USART2_IRQ();
+    //usart2_send("USART2_IRQn\r\n");
+    // original function
+    //USART2_IRQ();
+    USART2_IRQ_LED_CONTROL();
 }
 
 

@@ -106,6 +106,7 @@
 //=========================================================================
 //extern int counter;
 //extern char counter_char;
+extern int led_timer;
 
 
 //=========================================================================
@@ -124,9 +125,9 @@ void init_usart_2_tx();
 void init_usart_2_tx_rx();
 void usart2_send_text(char *chars);
 void usart2_print();
-void usart2_get_char();
 
-
+void USART2_IRQ_LED_CONTROL();
+void toggle_led_ms(int s);
 
 //=========================================================================
 #endif

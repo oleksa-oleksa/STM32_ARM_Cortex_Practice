@@ -6,6 +6,7 @@ GPIO_InitTypeDef GPIO_InitStructure;
 char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
 char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
+int led_timer = 1000;
 
 
 /* Init the GPIO as Output Push Pull with Pull-up
@@ -224,31 +225,54 @@ void our_init_board(){
     usart2_send_text("=> UART RX/TX \r\n");
     usart2_send_text("_____________\r\n");
 
-    init_BEEPER();
-    usart2_send_text("=> BEEPER\r\n");
+    //init_BEEPER();
+    usart2_send_text("=> BEEPER OFF (!) \r\n");
     usart2_send_text("_____________\r\n");
 }
 
-void usart2_get_char() {
+void USART2_IRQ_LED_CONTROL(void)
+{
+    char c;
+    static int j = 0;
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+        if (c=='\r')	// End of string input
+        {
+            usart2_rx_buffer[j] = 0x00 ;
 
-    /* Receive Data */
-    char rx_led[1024];
-    long int raw_input;
+            if (usart2_rx_buffer[0] == '1') {
+                strcpy(usart2_tx_buffer, "grüne LED im 1 Sekundentakt\r\n");
+                led_timer = 1000;
+            }
 
-    //strcpy(rx_led, USART_ReceiveData(USART2));
-    usart2_print(usart2_rx_buffer);
-    usart2_send_text("\r\n");
+            else if (usart2_rx_buffer[0] == '2') {
+                strcpy(usart2_tx_buffer, "grüne LED im 2 Sekundentakt\r\n");
+                led_timer = 2000;
+            }
+
+            else if (usart2_rx_buffer[0] == '4') {
+                strcpy(usart2_tx_buffer, "grüne LED im 4 Sekundentakt\r\n");
+                led_timer = 4000;
+            }
+
+            else {
+                strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
+            }
+
+            usart2_send(usart2_tx_buffer);
+            memset(usart2_rx_buffer,0x00,20);
+            j=0;
+        }
+        else
+        {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= 30) { j = 0; }
+        }
+    }
+}
 
 
-
-    //int number = (int)rx_led[0] - 48;
-    //usart2_print("Got:");
-    //usart2_print(rx_led);
-    //usart2_send_text("\r\n");
-
-
-    //if (number == 1) {
-    //    usart2_print("grüne LED im 1 Sekundentakt");
-    //    usart2_send_text("\r\n");
-    //}
+void toggle_led_ms(int s) {
 }

@@ -208,7 +208,12 @@ void USART2_IRQ(void)
  			if (zeichen=='\r')	// Ende Zeichenketten Eingabe
 				{
 					usart2_rx_buffer[j] = 0x00 ;
-					sprintf(usart2_tx_buffer, "Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+					sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+
+					if (usart2_rx_buffer[0] == 1) {
+                        sprintf(usart2_tx_buffer, "Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+					}
+
 					usart2_send(usart2_tx_buffer);
 					memset(usart2_rx_buffer,0x00,20);
 					j=0;

@@ -22,7 +22,7 @@ int main(void)
     // Freigabe von Interrupten
     our_init_board();
 
-    beep(4000,200,0); // test beep
+    //beep(4000,200,0); // test beep
 
     // assignment 2
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
@@ -33,7 +33,7 @@ int main(void)
     if RTC was not started, will be initialize with
      low-speed external 32.768 kHz oscillator (LSE)
     */
-    //start_RTC();
+    start_RTC();
     counter=0;
 
     while(1){
@@ -50,10 +50,10 @@ int main(void)
         // from looped output
 
         // We set NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-        // and implement everyrhing in IRQ_Handler
+        // and implement everything in IRQ_Handler
 
-        timer = 1000; // 1 second
-        while (timer) {;}
+        //timer = 1000; // 1 second
+        //while (timer) {;}
     }
     return 0; // to make the warning stop
 	}
