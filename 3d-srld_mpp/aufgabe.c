@@ -126,7 +126,7 @@ void usart2_send_text(char *chars)
     }
 }
 
-void usart2_2_print(char *chars)
+void usart2_print(char *chars)
 {
     // DRY: do not repeat yourself
     usart2_send_text(chars);
@@ -141,4 +141,22 @@ void our_init_board(){
     init_BEEPER();
     usart2_send_text("=> BEEPER\r\n");
     usart2_send_text("_____________\r\n");
+}
+
+void usart2_get_char() {
+
+    /* Receive Data */
+    char rx_led[1024];
+    strcpy(rx_led, USART_ReceiveData(USART2));
+
+    //int number = (int)rx_led[0] - 48;
+    //usart2_print("Got:");
+    usart2_print(rx_led);
+    usart2_send_text("\r\n");
+
+
+    //if (number == 1) {
+    //    usart2_print("grüne LED im 1 Sekundentakt");
+    //    usart2_send_text("\r\n");
+    //}
 }
