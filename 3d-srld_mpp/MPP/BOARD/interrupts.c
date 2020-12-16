@@ -91,7 +91,6 @@ void SysTick_Handler(void)
     // because otherwise with while(1)-loop will be blocked
     // the UART-2 IRQ Handler
     static  unsigned  long  SysTickCounter = 0;
-    //usart2_send("TickIRQ Top\r\n");
     SysTickCounter++;
     if (SysTickCounter  == led_timer) {
         GR_LED_TOGGLE;
@@ -99,7 +98,7 @@ void SysTick_Handler(void)
     }
     // overflow
     // if timer is set to the lower number
-    // we hve to catch the new lower number outside the toogle
+    // we have to catch the new lower number outside the toogle
     if (SysTickCounter  >= led_timer) {
         SysTickCounter = 0;
     }
