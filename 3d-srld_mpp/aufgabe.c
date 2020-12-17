@@ -215,6 +215,19 @@ void usart2_print(char *chars)
     usart2_send_text(chars);
 }
 
+void init_iwdg() { // configure to count 5 secs 
+    // activate write permissions
+    IWDG_WriteAccessCmd ( IWDG_WriteAccess_Enable );
+    // set prescaler (4 , 8 , 16 ,... , 256)
+    IWDG_SetPrescaler ( IWDG_Prescaler_64 );
+    // set value from which it counts down (0...4095)
+    IWDG_SetReload (2500);
+    // set wachdog to the max value (2500) 
+    IWDG_ReloadCounter ();
+    // activate IWDG
+    IWDG_Enable ();
+}
+
 void our_init_board(){
     init_POWER_ON();
 
@@ -224,6 +237,10 @@ void our_init_board(){
     usart2_send_text("____Start____\r\n");
     usart2_send_text("=> UART RX/TX \r\n");
     usart2_send_text("_____________\r\n");
+
+    init_iwdg();
+    usart2_send_text("=> IWDG \r\n");
+
 
     //init_BEEPER();
     usart2_send_text("=> BEEPER OFF (!) \r\n");
