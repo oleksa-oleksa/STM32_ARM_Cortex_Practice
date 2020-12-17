@@ -10,6 +10,14 @@ char counter_char;
 int main(void)
 {
 
+    // Assignment 5
+    // Window Watchdog
+    unsigned char value_watchdog_counter = 0x7f;
+    unsigned char window_value = 0x50;
+    unsigned char window_value_refresh = 0x50;
+    unsigned char cnt_i = 0;
+    unsigned char cnt_j = 0;
+
     // Initialization of the system and the clock system
     SystemInit();
 
@@ -29,9 +37,18 @@ int main(void)
     //init_button_1();
     //init_button_2();
 
-    // assignment 5: Watchdog
+    // assignment 5: Independent Watchdog
+    //init_iwdg();
+
+    // Assignment 5
+    // Window Watchdog
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, ENABLE);
+    WWDG_SetPrescaler(WWDG_Prescaler_8);
+    WWDG_SetWindowValue(window_value);
+    WWDG_Enable(value_watchdog_counter);
+
+
     init_button_2();
-    init_iwdg();
 
     /* Start der Real Time Clock
     if RTC was not started, will be initialize with
@@ -39,9 +56,34 @@ int main(void)
     */
     start_RTC();
     counter=0;
-    char tx[50];
+    char usart2_tx_buffer[50];
+
+    cnt_i = (unsigned char) (value_watchdog_counter + 1);
+
 
     while(1){
+
+        cnt_j = (unsigned char) ((WWDG->CR) & 0x7F) ;
+
+        if (cnt_j  < cnt_i ) {
+
+            sprintf(usart2_tx_buffer,"i = %u\r\n",cnt_j);
+            usart2_send_text(usart2_tx_buffer);
+
+            cnt_i = cnt_j;
+
+            if (cnt_i == window_value_refresh ) {
+
+                WWDG_SetCounter(value_watchdog_counter);
+
+                sprintf(usart2_tx_buffer,"####### neu geladen\r\n");
+                usart2_send_text(usart2_tx_buffer);
+
+                cnt_i = (unsigned char) (value_watchdog_counter + 1);
+            }
+        }
+
+        /* Assignment 5 Independent Watchdog
         counter++;
         sprintf(tx, "Schleife: %d\r\n", counter);
         usart2_send_text(tx);
@@ -52,6 +94,7 @@ int main(void)
             usart2_print("Taste2 gedrückt\r\n");
             wait_uSek(5000000);
         }
+        */
         //counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
         // Assignment 4 task 2.3.
         //usart2_send_text(&counter_char);
