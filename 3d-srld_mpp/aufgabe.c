@@ -234,17 +234,17 @@ void our_init_board(){
     //init_usart_2_tx();
     init_usart_2_tx_rx();
 
-    usart2_send_text("____Start____\r\n");
-    usart2_send_text("=> UART RX/TX \r\n");
-    usart2_send_text("_____________\r\n");
+    //usart2_send_text("____Start____\r\n");
+    //usart2_send_text("=> UART RX/TX \r\n");
+    //usart2_send_text("_____________\r\n");
 
     init_iwdg();
-    usart2_send_text("=> IWDG \r\n");
+    //usart2_send_text("=> IWDG \r\n");
 
 
     //init_BEEPER();
-    usart2_send_text("=> BEEPER OFF (!) \r\n");
-    usart2_send_text("_____________\r\n");
+    //usart2_send_text("=> BEEPER OFF (!) \r\n");
+    //usart2_send_text("_____________\r\n");
 }
 
 void USART2_IRQ_LED_CONTROL(void)

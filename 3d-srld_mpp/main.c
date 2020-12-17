@@ -36,7 +36,15 @@ int main(void)
     start_RTC();
     counter=0;
 
+    usart2_print("\r\nNeustart\r\n");
     while(1){
+        usart2_print("Schleife\r\n");
+        wait_uSek(500000);
+        IWDG_ReloadCounter();
+        if (GPIO_ReadInputDataBit ( GPIOC , GPIO_Pin_5 ) != 0) {
+            usart2_print("Taste2 gedrückt\r\n");
+            wait_uSek(5000000);
+        }
         //counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
         // Assignment 4 task 2.3.
         //usart2_send_text(&counter_char);
