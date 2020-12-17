@@ -39,8 +39,13 @@ int main(void)
     */
     start_RTC();
     counter=0;
-
+    char tx[50];
     while(1){
+        counter++;
+        sprintf(tx, "Schleife: %d\r\n", counter);
+        usart2_send_text(tx);
+        wait_uSek(500000);
+
         //counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
         // Assignment 4 task 2.3.
         //usart2_send_text(&counter_char);

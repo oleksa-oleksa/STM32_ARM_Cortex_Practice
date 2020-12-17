@@ -234,7 +234,7 @@ void our_init_board(){
     //init_usart_2_tx();
     init_usart_2_tx_rx();
 
-    usart2_send_text("____Start____\r\n");
+    usart2_send_text("\r\nNeustart\r\n");
     usart2_send_text("=> UART RX/TX \r\n");
     usart2_send_text("_____________\r\n");
 
@@ -290,18 +290,4 @@ void USART2_IRQ_LED_CONTROL(void)
             if (j >= 30) { j = 0; }
         }
     }
-}
-
-// configure to count 5 secs
-void init_iwdg() {
-    // activate write permissions
-    IWDG_WriteAccessCmd ( IWDG_WriteAccess_Enable );
-    // set prescaler (4 , 8 , 16 ,... , 256)
-    IWDG_SetPrescaler ( IWDG_Prescaler_64 );
-    // set value from which it counts down (0...4095)
-    IWDG_SetReload (2500);
-    // set wachdog to the max value (2500)
-    IWDG_ReloadCounter ();
-    // activate IWDG
-    IWDG_Enable ();
 }
