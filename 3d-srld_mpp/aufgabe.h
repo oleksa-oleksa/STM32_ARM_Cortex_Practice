@@ -127,7 +127,6 @@ void usart2_send_text(char *chars);
 void usart2_print();
 
 void USART2_IRQ_LED_CONTROL();
-void toggle_led_ms(int s);
-
+void init_iwdg();
 //=========================================================================
 #endif
