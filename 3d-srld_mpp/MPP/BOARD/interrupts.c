@@ -94,7 +94,7 @@ void SysTick_Handler(void)
     SysTickCounter++;
     if (SysTickCounter  == led_timer) {
         GR_LED_TOGGLE;
-        usart2_send("LED toggled\r\n");
+        //usart2_send("LED toggled\r\n");
     }
     // overflow
     // if timer is set to the lower number
