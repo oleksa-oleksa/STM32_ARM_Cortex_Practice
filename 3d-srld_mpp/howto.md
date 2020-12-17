@@ -61,7 +61,7 @@ After that, use the gdb:
 ```
 2. connect to board
 ```bash
-(gdb) target remote localhost:3333
+(gdb) target extended localhost:3333
 ```
 3. optional: set breakpoints like so
 ```bash
