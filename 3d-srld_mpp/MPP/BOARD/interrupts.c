@@ -90,6 +90,8 @@ void SysTick_Handler(void)
     // We will control LED toggle in SysTick also
     // because otherwise with while(1)-loop will be blocked
     // the UART-2 IRQ Handler
+    // Assignment 4
+    /*
     static  unsigned  long  SysTickCounter = 0;
     SysTickCounter++;
     if (SysTickCounter  == led_timer) {
@@ -102,6 +104,7 @@ void SysTick_Handler(void)
     if (SysTickCounter  >= led_timer) {
         SysTickCounter = 0;
     }
+    */
     //======================================================================
 
 
@@ -428,7 +431,9 @@ void USART2_IRQHandler(void)
     //usart2_send("USART2_IRQn\r\n");
     // original function
     //USART2_IRQ();
-    USART2_IRQ_LED_CONTROL();
+
+    // Assignment 4: LED Control via UART
+    //USART2_IRQ_LED_CONTROL();
 }
 
 
