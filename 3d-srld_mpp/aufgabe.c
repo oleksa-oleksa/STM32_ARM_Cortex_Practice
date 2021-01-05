@@ -291,3 +291,62 @@ void USART2_IRQ_LED_CONTROL(void)
         }
     }
 }
+
+void init_button_1_irq() {
+    // pressed - 0, not pressed - 1: LOW ACTIVE -> HL for trigger
+    // PC8 button1 delivers an interrupt on a HL edge
+    // for initial GPIO initialization the previously created function from assignment 2 is used
+    init_button_1();
+
+    /* Set variables used for IRQ */
+    EXTI_InitTypeDef EXTI_InitStruct;
+    NVIC_InitTypeDef NVIC_InitStruct;
+
+    /* Enable clock for SYSCFG */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Use PC8 for EXTI_Line8 */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource8);
+
+    /* PC8 is connected to EXTI_Line8 */
+    EXTI_InitStruct.EXTI_Line = EXTI_Line8;
+    /* Enable interrupt */
+    EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+    /* Interrupt mode */
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    /* Triggers on HL High -> Low falling edge
+     * A change of state, i.e. an edge, serves as a start or stop condition.*/
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    /* Add to EXTI */
+    EXTI_Init(&EXTI_InitStruct);
+
+    /* Add IRQ vector to NVIC */
+    /* PC8 is connected to EXTI9_5_IRQn
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
+    NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+    /* Set priority: This parameter can be a value between 0 and 15 */
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
+    /* Set sub priority */
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x00;
+    /* Enable interrupt */
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    /* Add to NVIC */
+    NVIC_Init(&NVIC_InitStruct);
+}
+
+/* Handle PB12 interrupt */
+void EXTI15_10_IRQHandler(void) {
+    /* Make sure that interrupt flag is set */
+    /* PC8 is connected to EXTI_Line8 */
+    if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
+        /* PC8 CASE: */
+        // The ISR should switch on the green LED on PB2.
+        GR_LED_ON;
+
+        /* Clear interrupt flag */
+        EXTI_ClearITPendingBit(EXTI_Line12);
+    }
+}
+void init_button_2_irq() {
+
+}

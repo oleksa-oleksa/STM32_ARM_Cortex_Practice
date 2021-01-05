@@ -128,5 +128,10 @@ void usart2_print();
 
 void USART2_IRQ_LED_CONTROL();
 void init_iwdg();
+
+void init_button_1_irq();
+void init_button_2_irq();
+void EXTI15_10_IRQHandler(void);
+
 //=========================================================================
 #endif
