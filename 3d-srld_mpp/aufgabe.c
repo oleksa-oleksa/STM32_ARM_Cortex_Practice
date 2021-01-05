@@ -8,6 +8,7 @@ char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
 
+// sudo chmod 0777 /dev/ttyUSB0
 
 /* Init the GPIO as Output Push Pull with Pull-up
  * on selected Port with selected Pin
@@ -238,7 +239,7 @@ void our_init_board(){
     usart2_send_text("=> UART RX/TX \r\n");
     usart2_send_text("_____________\r\n");
 
-    init_iwdg();
+    //init_iwdg();
     //usart2_send_text("=> IWDG \r\n");
 
 

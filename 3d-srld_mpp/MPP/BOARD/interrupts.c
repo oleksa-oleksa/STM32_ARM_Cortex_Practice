@@ -248,6 +248,8 @@ void EXTI4_IRQHandler(void)
 //=========================================================================
 void EXTI9_5_IRQHandler(void)
 {
+    //========================
+    // some staff the we got from repo, let it be here
 	//SystemInit();
 	//===== Taster2
 	if (EXTI_GetITStatus(EXTI_Line5) == SET)
@@ -272,13 +274,20 @@ void EXTI9_5_IRQHandler(void)
 			EXTI_ClearITPendingBit(EXTI_Line7);
 		    usart2_send("EXTI7_IRQn\r\n");
 		}
-	//===== Taster 1
+	//===== Button 1
+    // Assignment 6: Interrupts
+    /* Make sure that interrupt flag is set */
+    /* PC8 is connected to EXTI_Line8 */
 	if (EXTI_GetITStatus(EXTI_Line8) == SET)
 		{
-			EXTI_ClearFlag(EXTI_Line8);
+            /* PC8 CASE: */
+            // The ISR should switch on the green LED on PB2.
+            GR_LED_ON;
+
+	        EXTI_ClearFlag(EXTI_Line8);
 			EXTI_ClearITPendingBit(EXTI_Line8);
-		    usart2_send("EXTI8_IRQn\r\n");
-			TASTER1_IRQ();
+		    usart2_send("Button 1 pressed EXTI8_IRQn\r\n");
+			//TASTER1_IRQ();
 		}
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line9) == SET)
@@ -295,21 +304,7 @@ void EXTI9_5_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
     //========================
-    // Assignment 6: Interrupts
-    /* Make sure that interrupt flag is set */
-    /* PC8 is connected to EXTI_Line8 */
-    if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
-        /* PC8 CASE: */
-        // The ISR should switch on the green LED on PB2.
-        GR_LED_ON;
 
-        /* Clear interrupt flag */
-        EXTI_ClearITPendingBit(EXTI_Line12);
-    }
-
-
-    //========================
-    // some staff the we got from repo, let it be here
 	//SystemInit();
 	//===== nicht belegt
 	if(EXTI_GetITStatus(EXTI_Line10) == SET)
