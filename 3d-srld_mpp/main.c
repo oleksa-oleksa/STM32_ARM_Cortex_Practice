@@ -50,6 +50,10 @@ int main(void)
     WWDG_Enable(value_watchdog_counter);
     */
 
+    // Assignment 6: Interrupts
+    // In the initial situation, the green LED should be switched off.
+    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
+    // Both buttons on PC8 and PC5 should be interrupt capable
     init_button_2();
 
     /* Start der Real Time Clock
@@ -57,63 +61,16 @@ int main(void)
      low-speed external 32.768 kHz oscillator (LSE)
     */
     start_RTC();
-    counter=0;
     char usart2_tx_buffer[50];
 
     //cnt_i = (unsigned char) (value_watchdog_counter + 1);
 
 
     while(1){
-
-        cnt_j = (unsigned char) ((WWDG->CR) & 0x7F) ;
-
-        if (cnt_j  < cnt_i ) {
-
-            sprintf(usart2_tx_buffer,"i = %u\r\n",cnt_j);
-            usart2_send_text(usart2_tx_buffer);
-
-            cnt_i = cnt_j;
-
-            if (cnt_i == window_value_refresh ) {
-
-                WWDG_SetCounter(value_watchdog_counter);
-
-                sprintf(usart2_tx_buffer,"####### neu geladen\r\n");
-                usart2_send_text(usart2_tx_buffer);
-
-                cnt_i = (unsigned char) (value_watchdog_counter + 1);
-            }
-        }
-
-        /* Assignment 5 Independent Watchdog
-        counter++;
-        sprintf(tx, "Schleife: %d\r\n", counter);
-        usart2_send_text(tx);
-        wait_uSek(500000);
-
-        IWDG_ReloadCounter();
-        if (GPIO_ReadInputDataBit ( GPIOC , GPIO_Pin_5 ) != 0) {
-            usart2_print("Taste2 gedrückt\r\n");
-            wait_uSek(5000000);
-        }
-        */
-        //counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
-        // Assignment 4 task 2.3.
-        //usart2_send_text(&counter_char);
-        // Assignment 4, task 2.5
-        //usart2_print(": Cora und Oleksandra, Frohe Weihnachten!!");
-        //usart2_send_text("\r\n");
-        //counter = (counter +1) % 10;
-
-        // for assignment 4, task 2.6 the previous lines
-        // should be commented to free uart
-        // from looped output
-
-        // We set NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-        // and implement everything in IRQ_Handler
+        // The core of the sample application should consist of an empty endless loop.
 
         //timer = 1000; // 1 second
         //while (timer) {;}
     }
     return 0; // to make the warning stop
-	}
+}

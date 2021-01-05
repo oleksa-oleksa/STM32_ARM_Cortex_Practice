@@ -12,13 +12,13 @@ int main(void)
 
     // Assignment 5
     // Window Watchdog
-    /*
+
     unsigned char value_watchdog_counter = 0x7f;
     unsigned char window_value = 0x50;
     unsigned char window_value_refresh = 0x50;
     unsigned char cnt_i = 0;
     unsigned char cnt_j = 0;
-    */
+
     // Initialization of the system and the clock system
     SystemInit();
 
@@ -43,12 +43,11 @@ int main(void)
 
     // Assignment 5
     // Window Watchdog
-    /*
+
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, ENABLE);
     WWDG_SetPrescaler(WWDG_Prescaler_8);
     WWDG_SetWindowValue(window_value);
     WWDG_Enable(value_watchdog_counter);
-    */
 
     init_button_2();
 
@@ -97,23 +96,6 @@ int main(void)
             wait_uSek(5000000);
         }
         */
-        //counter_char = counter+'0'; // convert int to char by building ascci value of char. 1+'0'=='1'
-        // Assignment 4 task 2.3.
-        //usart2_send_text(&counter_char);
-        // Assignment 4, task 2.5
-        //usart2_print(": Cora und Oleksandra, Frohe Weihnachten!!");
-        //usart2_send_text("\r\n");
-        //counter = (counter +1) % 10;
-
-        // for assignment 4, task 2.6 the previous lines
-        // should be commented to free uart
-        // from looped output
-
-        // We set NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-        // and implement everything in IRQ_Handler
-
-        //timer = 1000; // 1 second
-        //while (timer) {;}
     }
     return 0; // to make the warning stop
-	}
+}
