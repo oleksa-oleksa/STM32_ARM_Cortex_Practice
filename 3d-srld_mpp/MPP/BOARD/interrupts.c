@@ -294,6 +294,22 @@ void EXTI9_5_IRQHandler(void)
 //=========================================================================
 void EXTI15_10_IRQHandler(void)
 {
+    //========================
+    // Assignment 6: Interrupts
+    /* Make sure that interrupt flag is set */
+    /* PC8 is connected to EXTI_Line8 */
+    if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
+        /* PC8 CASE: */
+        // The ISR should switch on the green LED on PB2.
+        GR_LED_ON;
+
+        /* Clear interrupt flag */
+        EXTI_ClearITPendingBit(EXTI_Line12);
+    }
+
+
+    //========================
+    // some staff the we got from repo, let it be here
 	//SystemInit();
 	//===== nicht belegt
 	if(EXTI_GetITStatus(EXTI_Line10) == SET)

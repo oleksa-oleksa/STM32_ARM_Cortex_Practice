@@ -322,7 +322,8 @@ void init_button_1_irq() {
 
     /* Add IRQ vector to NVIC */
     /* PC8 is connected to EXTI9_5_IRQn
-     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn
+     * Handle PB12 interrupt is already defined in interrupts.c, so we will add our code for PC8 there*/
     NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
     /* Set priority: This parameter can be a value between 0 and 15 */
     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
@@ -334,19 +335,6 @@ void init_button_1_irq() {
     NVIC_Init(&NVIC_InitStruct);
 }
 
-/* Handle PB12 interrupt */
-void EXTI15_10_IRQHandler(void) {
-    /* Make sure that interrupt flag is set */
-    /* PC8 is connected to EXTI_Line8 */
-    if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
-        /* PC8 CASE: */
-        // The ISR should switch on the green LED on PB2.
-        GR_LED_ON;
-
-        /* Clear interrupt flag */
-        EXTI_ClearITPendingBit(EXTI_Line12);
-    }
-}
 void init_button_2_irq() {
 
 }
