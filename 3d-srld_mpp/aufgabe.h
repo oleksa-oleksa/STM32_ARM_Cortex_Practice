@@ -139,6 +139,8 @@ void button_2_handler();
 
 void deinit_button_1_irq();
 
+void get_sys_time();
+
 
 
 

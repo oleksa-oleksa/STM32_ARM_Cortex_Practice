@@ -8,6 +8,8 @@ char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
 
+char date_buf[5];
+
 // sudo chmod 0777 /dev/ttyUSB0
 
 /* Init the GPIO as Output Push Pull with Pull-up
@@ -470,4 +472,19 @@ void deinit_button_1_irq() {
     NVIC_InitStruct.NVIC_IRQChannelCmd = DISABLE;
     /* Add to NVIC */
     NVIC_Init(&NVIC_InitStruct);
+}
+
+void get_sys_time() {
+    RTC_TimeTypeDef sTime1;
+    RTC_DateTypeDef sDate1;
+    uint8_t buffer[20];
+
+    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
+    RTC_GetTime(RTC_Format_BCD, &sTime1);
+    RTC_GetDate(RTC_Format_BCD, &sDate1);
+
+    sprintf(date_buf, "%i", sTime1.RTC_Hours);
+    usart2_send(date_buf);
+    usart2_send("\r\n");
+
 }
