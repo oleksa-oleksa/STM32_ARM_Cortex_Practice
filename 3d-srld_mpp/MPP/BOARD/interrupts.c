@@ -2,6 +2,11 @@
 #include "usart.h"
 #include "aufgabe.h"
 
+int counter_button_2 = 0;
+int counter_button_1 = 0;
+char counter_buf[5];
+
+
 void hard_fault_handler_c(unsigned int * hardfault_args);
 
 //=========================================================================
@@ -260,7 +265,9 @@ void EXTI9_5_IRQHandler(void)
     // Assignment 6: Interrupts
     /* Make sure that interrupt flag is set */
     /* PC5 is connected to EXTI_Line5 */
-	if (EXTI_GetITStatus(EXTI_Line5) == SET)
+    char counter_char;
+
+    if (EXTI_GetITStatus(EXTI_Line5) == SET)
 		{
 			EXTI_ClearFlag(EXTI_Line5);
 			EXTI_ClearITPendingBit(EXTI_Line5);
@@ -270,6 +277,17 @@ void EXTI9_5_IRQHandler(void)
             // The ISR should switch off the green LED on PB2.
             button_2_handler();
 
+            // counter preparations
+            counter_button_2++;
+            sprintf(counter_buf, "%i", counter_button_2);
+            usart2_send(counter_buf);
+            usart2_send("\r\n");
+
+            if (counter_button_2 == 2) {
+                usart2_send("Interrupt enabled!\r\n");
+                enable_interrupt9_5_IRQn(EXTI_Line8);
+                counter_button_2 = 0;
+            }
 		}
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)
@@ -297,7 +315,21 @@ void EXTI9_5_IRQHandler(void)
 			//TASTER1_IRQ();
             /* PC8 CASE: */
             // The ISR should switch on the green LED on PB2.
-			button_1_handler();
+            button_1_handler();
+
+            // counter preparations
+            counter_button_1++;
+            sprintf(counter_buf, "%i", counter_button_1);
+            usart2_send(counter_buf);
+            usart2_send("\r\n");
+
+            if (counter_button_1 == 10) {
+                usart2_send("Interrupt disabled!\r\n");
+                disable_interrupt9_5_IRQn(EXTI_Line8);
+                // restore interrupt flag for line 5
+                //enable_interrupt9_5_IRQn(EXTI_Line5);
+                counter_button_1 = 0;
+            }
 		}
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line9) == SET)

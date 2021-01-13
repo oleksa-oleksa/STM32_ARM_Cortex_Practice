@@ -317,8 +317,8 @@ void init_button_1_irq() {
     EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
     /* Triggers on HL High -> Low falling edge
      * A change of state, i.e. an edge, serves as a start or stop condition.*/
-    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
-    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
     /* Add to EXTI */
     EXTI_Init(&EXTI_InitStruct);
 
@@ -360,8 +360,8 @@ void init_button_2_irq() {
     /* Interrupt mode */
     EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
     /* A change of state, i.e. an edge, serves as a start or stop condition.*/
-    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
-    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
     /* Add to EXTI */
     EXTI_Init(&EXTI_InitStruct);
 
@@ -386,4 +386,42 @@ void button_1_handler() {
 void button_2_handler() {
     GR_LED_OFF;
     usart2_send("Green LED is OFF\r\n");
+}
+
+void deinit_button_1_irq() {
+    /* Set variables used for IRQ */
+    EXTI_InitTypeDef EXTI_InitStruct;
+    NVIC_InitTypeDef NVIC_InitStruct;
+
+    /* Enable clock for SYSCFG */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Use PC8 for EXTI_Line8 */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource8);
+
+    /* PC8 is connected to EXTI_Line8 */
+    EXTI_InitStruct.EXTI_Line = EXTI_Line8;
+    /* Enable interrupt */
+    EXTI_InitStruct.EXTI_LineCmd = DISABLE;
+    /* Interrupt mode */
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    /* Triggers on HL High -> Low falling edge
+     * A change of state, i.e. an edge, serves as a start or stop condition.*/
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    /* Add to EXTI */
+    EXTI_Init(&EXTI_InitStruct);
+
+    /* Add IRQ vector to NVIC */
+    /* PC8 is connected to EXTI9_5_IRQn
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
+    NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+    /* Set priority: This parameter can be a value between 0 and 15 */
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
+    /* Set sub priority */
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x00;
+    /* Enable interrupt */
+    NVIC_InitStruct.NVIC_IRQChannelCmd = DISABLE;
+    /* Add to NVIC */
+    NVIC_Init(&NVIC_InitStruct);
 }
