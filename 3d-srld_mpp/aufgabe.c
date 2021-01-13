@@ -293,6 +293,52 @@ void USART2_IRQ_LED_CONTROL(void)
     }
 }
 
+void USART2_IRQ_LED_CONTROL_WITH_OFF() {
+    char c;
+    static int j = 0;
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+        if (c=='\r')	// End of string input
+        {
+            usart2_rx_buffer[j] = 0x00 ;
+
+            if (usart2_rx_buffer[0] == '1') {
+                strcpy(usart2_tx_buffer, "grüne LED im 1 Sekundentakt\r\n");
+                led_timer = 1000;
+            }
+
+            else if (usart2_rx_buffer[0] == '4') {
+                strcpy(usart2_tx_buffer, "grüne LED im 4 Sekundentakt\r\n");
+                led_timer = 4000;
+            }
+
+            else if (usart2_rx_buffer[0] == 's') {
+                strcpy(usart2_tx_buffer, "grüne LED ist AUS\r\n");
+                LED_GR_OFF;
+                led_timer = 0;
+            }
+
+            else {
+                //strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
+                // Assignment 4, task 2.7
+                sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+            }
+
+            usart2_send(usart2_tx_buffer);
+            memset(usart2_rx_buffer,0x00,20);
+            j=0;
+        }
+        else
+        {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= 30) { j = 0; }
+        }
+    }
+}
+
+
 void init_button_1_irq() {
     // pressed - 0, not pressed - 1: LOW ACTIVE -> HL for trigger
     // PC8 button1 delivers an interrupt on a HL edge
