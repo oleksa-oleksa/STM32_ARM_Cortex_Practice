@@ -132,5 +132,10 @@ void init_iwdg();
 void init_button_1_irq();
 void init_button_2_irq();
 
+void button_1_handler();
+void button_2_handler();
+
+
+
 //=========================================================================
 #endif

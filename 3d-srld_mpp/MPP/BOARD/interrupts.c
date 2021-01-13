@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "usart.h"
+#include "aufgabe.h"
 
 void hard_fault_handler_c(unsigned int * hardfault_args);
 
@@ -254,13 +255,20 @@ void EXTI9_5_IRQHandler(void)
     //========================
     // some staff the we got from repo, let it be here
 	//SystemInit();
-	//===== Taster2
+
+    //===== Button 2
+    // Assignment 6: Interrupts
+    /* Make sure that interrupt flag is set */
+    /* PC5 is connected to EXTI_Line5 */
 	if (EXTI_GetITStatus(EXTI_Line5) == SET)
 		{
 			EXTI_ClearFlag(EXTI_Line5);
 			EXTI_ClearITPendingBit(EXTI_Line5);
 			usart2_send("EXTI5_IRQn\r\n");
-			TASTER2_IRQ();
+			//TASTER2_IRQ();
+            /* PC5 CASE: */
+            // The ISR should switch off the green LED on PB2.
+            button_2_handler();
 
 		}
 	//===== nicht belegt
@@ -283,14 +291,13 @@ void EXTI9_5_IRQHandler(void)
     /* PC8 is connected to EXTI_Line8 */
 	if (EXTI_GetITStatus(EXTI_Line8) == SET)
 		{
-            /* PC8 CASE: */
-            // The ISR should switch on the green LED on PB2.
-            GR_LED_ON;
-
 	        EXTI_ClearFlag(EXTI_Line8);
 			EXTI_ClearITPendingBit(EXTI_Line8);
 		    usart2_send("Button 1 pressed EXTI8_IRQn\r\n");
 			//TASTER1_IRQ();
+            /* PC8 CASE: */
+            // The ISR should switch on the green LED on PB2.
+			button_1_handler();
 		}
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line9) == SET)

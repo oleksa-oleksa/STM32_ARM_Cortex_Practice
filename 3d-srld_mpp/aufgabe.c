@@ -323,8 +323,7 @@ void init_button_1_irq() {
 
     /* Add IRQ vector to NVIC */
     /* PC8 is connected to EXTI9_5_IRQn
-     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn
-     * Handle PB12 interrupt is already defined in interrupts.c, so we will add our code for PC8 there*/
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
     NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
     /* Set priority: This parameter can be a value between 0 and 15 */
     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
@@ -337,5 +336,52 @@ void init_button_1_irq() {
 }
 
 void init_button_2_irq() {
+    // pressed - 1, not pressed - 0: LOW ACTIVE -> LH for trigger ___|--
+    // Active-HIGH button means that when you press/close the switch, then the signal sent to the MCU will be HIGH.
+    // PC8 button1 delivers an interrupt on a LH edge
+    // for initial GPIO initialization the previously created function from assignment 2 is used
+    init_button_2();
 
+    /* Set variables used for IRQ */
+    EXTI_InitTypeDef EXTI_InitStruct;
+    NVIC_InitTypeDef NVIC_InitStruct;
+
+    /* Enable clock for SYSCFG */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Use PC5 for EXTI_Line5 */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource5);
+
+    /* PC5 is connected to EXTI_Line5 */
+    EXTI_InitStruct.EXTI_Line = EXTI_Line5;
+    /* Enable interrupt */
+    EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+    /* Interrupt mode */
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    /* A change of state, i.e. an edge, serves as a start or stop condition.*/
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    /* Add to EXTI */
+    EXTI_Init(&EXTI_InitStruct);
+
+    /* Add IRQ vector to NVIC */
+    /* PC5 is connected to EXTI9_5_IRQn
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQ */
+    NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+    /* Set priority: This parameter can be a value between 0 and 15 */
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x01;
+    /* Set sub priority */
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x01;
+    /* Enable interrupt */
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    /* Add to NVIC */
+    NVIC_Init(&NVIC_InitStruct);
+}
+
+void button_1_handler() {
+    GR_LED_ON;
+    usart2_send("Green LED is ON\r\n");
+}
+void button_2_handler() {
+    GR_LED_OFF;
+    usart2_send("Green LED is OFF\r\n");
 }

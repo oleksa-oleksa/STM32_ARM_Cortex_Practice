@@ -65,6 +65,7 @@ int main(void)
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
     // Both buttons on PC8 and PC5 should be interrupt capable
     init_button_1_irq();
+    init_button_2_irq();
 
     /* Start der Real Time Clock
     if RTC was not started, will be initialize with
