@@ -317,7 +317,8 @@ void init_button_1_irq() {
     EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
     /* Triggers on HL High -> Low falling edge
      * A change of state, i.e. an edge, serves as a start or stop condition.*/
-    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
     /* Add to EXTI */
     EXTI_Init(&EXTI_InitStruct);
 
@@ -359,7 +360,8 @@ void init_button_2_irq() {
     /* Interrupt mode */
     EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
     /* A change of state, i.e. an edge, serves as a start or stop condition.*/
-    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
     /* Add to EXTI */
     EXTI_Init(&EXTI_InitStruct);
 
