@@ -7,6 +7,8 @@ char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
 char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
+char date_buf[5];
+
 
 // sudo chmod 0777 /dev/ttyUSB0
 
@@ -470,4 +472,68 @@ void deinit_button_1_irq() {
     NVIC_InitStruct.NVIC_IRQChannelCmd = DISABLE;
     /* Add to NVIC */
     NVIC_Init(&NVIC_InitStruct);
+}
+
+int bcd_decimal(uint8_t hex)
+{
+    // More significant nybble is valid
+    if (((hex & 0xF0) >> 4) < 10) {
+        // Less significant nybble is valid
+        if ((hex & 0x0F) < 10);
+        {
+            int dec = ((hex & 0xF0) >> 4) * 10 + (hex & 0x0F);
+            return dec;
+        }
+    }
+    else {
+        return hex;
+    }
+}
+
+void usart2_send_time(RTC_TimeTypeDef time) {
+    usart2_send("Time: ");
+    int hours = bcd_decimal(time.RTC_Hours);
+    sprintf(date_buf, "%i", hours);
+    usart2_send(date_buf);
+    usart2_send(":");
+    int minutes = bcd_decimal(time.RTC_Minutes);
+    sprintf(date_buf, "%i", minutes);
+    usart2_send(date_buf);
+    usart2_send(":");
+    int seconds = bcd_decimal(time.RTC_Seconds);
+    sprintf(date_buf, "%i", seconds);
+    usart2_send(date_buf);
+    usart2_send("\r\n");
+}
+
+void usart2_send_date(RTC_DateTypeDef date) {
+    usart2_send("Day: ");
+    int day = bcd_decimal(date.RTC_Date);
+    sprintf(date_buf, "%i", day);
+    usart2_send(date_buf);
+    usart2_send(".");
+    int month = bcd_decimal(date.RTC_Month);
+    sprintf(date_buf, "%i", month);
+    usart2_send(date_buf);
+    usart2_send(".");
+    int year = bcd_decimal(date.RTC_Year);
+    sprintf(date_buf, "%i", year);
+    usart2_send(date_buf);
+    usart2_send("\r\n");
+}
+
+void get_sys_time() {
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    uint8_t buffer[20];
+
+    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
+    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
+    RTC_GetTime(RTC_Format_BCD, &sTime);
+    RTC_GetDate(RTC_Format_BCD, &sDate);
+
+    // The data is BCD coded so we need to
+    // convert a binary-coded decimal number into a decimal number in terms of representation
+    usart2_send_time(sTime);
+    usart2_send_date(sDate);
 }

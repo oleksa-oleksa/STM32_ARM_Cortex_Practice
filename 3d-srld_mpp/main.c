@@ -80,8 +80,8 @@ int main(void)
     while(1){
         // The core of the sample application should consist of an empty endless loop.
 
-        //timer = 1000; // 1 second
-        //while (timer) {;}
+        wait_mSek(1000);
+        get_sys_time();
     }
     return 0; // to make the warning stop
 }
