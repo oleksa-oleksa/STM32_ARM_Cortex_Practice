@@ -470,10 +470,6 @@ void ADC_IRQHandler(void){
 }
 
 //Interrupt handler declaration
-// In my development environment,
-// this handler is declared in my startup assembly file as a weak reference to Default_Handle
-// so as long as I provide a new declaration and implementation of this interrupt handler,
-// the weak reference will be replaced
 //=========================================================================
 void USART2_IRQHandler(void)
 {
@@ -483,9 +479,10 @@ void USART2_IRQHandler(void)
     //USART2_IRQ();
 
     // Assignment 4: LED Control via UART
-    //USART2_IRQ_LED_CONTROL();
+    // USART2_IRQ_LED_CONTROL();
 
     // Assignment 6: LED Control via UART
+    // Assignment 7: Set Date and Time via UART
     USART2_IRQ_LED_CONTROL_WITH_OFF();
 }
 

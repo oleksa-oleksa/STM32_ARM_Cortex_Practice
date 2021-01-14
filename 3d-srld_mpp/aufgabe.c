@@ -192,8 +192,8 @@ void init_usart_2_tx_rx() {
 
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
@@ -317,6 +317,13 @@ void USART2_IRQ_LED_CONTROL_WITH_OFF() {
 
             else if (usart2_rx_buffer[0] == 's') {
                 strcpy(usart2_tx_buffer, "grüne LED ist AUS\r\n");
+                LED_GR_OFF;
+                led_timer = 0;
+            }
+
+            // case: set Time and Date, LED will be turned off for a silence purpose
+            else if (usart2_rx_buffer[0] == 'd') {
+                strcpy(usart2_tx_buffer, "Enter date!\r\n");
                 LED_GR_OFF;
                 led_timer = 0;
             }
