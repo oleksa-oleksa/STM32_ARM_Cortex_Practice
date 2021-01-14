@@ -33,9 +33,10 @@ int main(void)
 
 
     while(1){
-        // pause 1 sec
-        //wait_mSek(1000);
-        //get_sys_time();
+
+        wait_mSek(1000);
+        get_sys_time();
+
     }
     return 0; // to make the warning stop
 }

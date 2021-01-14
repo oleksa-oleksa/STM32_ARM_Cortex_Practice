@@ -146,8 +146,5 @@ int bcd_decimal(uint8_t hex);
 void usart2_send_date(RTC_DateTypeDef date);
 
 
-
-
-
 //=========================================================================
 #endif

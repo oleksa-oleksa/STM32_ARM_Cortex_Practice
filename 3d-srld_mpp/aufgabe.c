@@ -7,6 +7,8 @@ char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
 char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
+char date_buf[5];
+
 
 char date_buf[5];
 
