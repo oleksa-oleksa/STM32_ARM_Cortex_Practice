@@ -19,8 +19,6 @@ int main(void)
     // The call then takes place every ms of the handler for the SysTick_IRQn interrupt
     InitSysTick();
 
-    our_init_board();
-
     // Assignment 6: Interrupts
     // In the initial situation, the green LED should be switched off.
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
@@ -28,6 +26,7 @@ int main(void)
     init_button_1_irq();
     init_button_2_irq();
 
+    our_init_board();
 
     /* Start der Real Time Clock */
     start_RTC();
