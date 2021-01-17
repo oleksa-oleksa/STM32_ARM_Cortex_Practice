@@ -572,10 +572,6 @@ void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint3
 	//=== Alarm vor dem stellen ausschalten =========================
 	RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
 
-	//=== aktuelle Zeit auslesen ====================================
-	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Aktuell);
-	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Aktuell);
-
 	//=== Alarm Struct füllen =======================================
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_H12 = RTC_H12_AM;
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = Std;
@@ -586,7 +582,6 @@ void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint3
 	//=== Alarm Maske setzen ========================================
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask;
 
-    setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
 	sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
@@ -627,7 +622,7 @@ void print_weekday_of_alarm() {
     } else
     {
         usart2_send_text("Alarm used Date\r\n");
-        return(0);
+        return;
     }
     char *weekdays[] = {"Mo", "Tue", "Wen", "Thu", "Fr"};
     sprintf(data, "Alarm was set to the following weekday: %s.\r\n", weekdays[RTC_Alarm.RTC_AlarmDateWeekDay-1]);
@@ -636,12 +631,64 @@ void print_weekday_of_alarm() {
 
 void set_RTC_Alarm_Mondays() {
     set_RTC_Alarm(RTC_Weekday_Monday, 0, 30, 0, RTC_AlarmMask_None);
-    alarm_type = RCT_MONDAY_ALARM;
+    alarm_type = RTC_MONDAY_ALARM;
     print_weekday_of_alarm();
 }
 
 void set_RTC_Alarm_Thirds() { // alarm each 30 secs of a minute
-    alarm_type = RCT_THRIDS_ALARM;
+    alarm_type = RTC_THRIDS_ALARM;
     set_RTC_Alarm(RTC_Weekday_Saturday, 0, 0, 30, RTC_AlarmMask_DateWeekDay | RTC_AlarmMask_Hours | RTC_AlarmMask_Minutes); // mask anything but seconds
     show_RTC_Alarm();
+}
+
+void set_RTC_Alarm_each_25_secs() {
+    alarm_type = RTC_EVERY_25_SECS_ALARM;
+    _Bool setzen_moeglich = false;	
+	char alarmOutput[128];
+    //=== aktuelle Zeit auslesen ====================================
+	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Aktuell);
+	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Aktuell);
+
+
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_H12 = RTC_H12_AM;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = RTC_Time_Aktuell.RTC_Hours;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes = RTC_Time_Aktuell.RTC_Minutes;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Aktuell.RTC_Seconds + 25; // check if we need to handle when > 60 secs
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = RTC_Date_Aktuell.RTC_Date;
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_Date;
+	//=== Alarm Maske setzen ========================================
+	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask_None;
+    //=== Überläufe der Sek, Min, Std und Tage korrigieren ==========
+	setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
+
+    sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds,
+			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
+	usart2_send_text(alarmOutput);
+
+	//=== Überläufe der Sek, Min, Std und Tage korrigieren ==========
+
+	//=== Wenn Alarmzeit einstellbar dann einstellen ================
+	if (setzen_moeglich == true)
+	{
+		// Init RTC Alarm A register
+		RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
+		// RTC Alarm A Interrupt freigeben
+		RTC_ITConfig(RTC_IT_ALRA, DISABLE);
+		// Alarm freigeben
+		RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
+		// Flag zurücksetzen
+		RTC_ClearFlag(RTC_FLAG_ALRAF);
+		// aktiviert für den ALARM A PC13 als Open Drain
+		// bei Alarm Low-Pegel
+		// zum Einschalten der Versorgungsspannung
+		RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
+		RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
+
+		RTC_ITConfig(RTC_IT_ALRA, ENABLE);
+		// Alarm freigeben
+		RTC_AlarmCmd(RTC_Alarm_A, ENABLE);
+    }
 }

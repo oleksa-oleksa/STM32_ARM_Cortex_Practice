@@ -101,8 +101,9 @@
 #define USART2_TX_BUFFERSIZE_50 50
 #define USART2_RX_BUFFERSIZE_50 1024
 
-#define RCT_MONDAY_ALARM 1
-#define RCT_THRIDS_ALARM 2
+#define RTC_MONDAY_ALARM 1
+#define RTC_THRIDS_ALARM 2
+#define RTC_EVERY_25_SECS_ALARM 3
 
 
 //=========================================================================
@@ -153,6 +154,7 @@ void usart2_send_date(RTC_DateTypeDef date);
 void set_RTC_Alarm_Mondays();
 void set_RTC_Alarm_Thirds();
 
+void set_RTC_Alarm_each_25_secs();
 
 //=========================================================================
 #endif

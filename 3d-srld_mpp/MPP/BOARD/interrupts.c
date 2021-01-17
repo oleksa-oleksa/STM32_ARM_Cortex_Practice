@@ -437,11 +437,16 @@ void RTC_Alarm_IRQHandler(void)
 			LED_GR_TOGGLE;
 			RTC_ClearITPendingBit(RTC_IT_ALRA);
 			EXTI_ClearITPendingBit(EXTI_Line17);
-			if (alarm_type == RCT_MONDAY_ALARM) {
+			if (alarm_type == RTC_MONDAY_ALARM) {
 				get_sys_time();
 			}
-			if (alarm_type == RCT_THRIDS_ALARM) {
+			if (alarm_type == RTC_THRIDS_ALARM) {
 				get_sys_only_time();
+			}
+			if (alarm_type == RTC_EVERY_25_SECS_ALARM) {
+				get_sys_only_time();
+				LED_GR_TOGGLE;
+				set_RTC_Alarm_each_25_secs();
 			}
 			
 			//	if (RTC_Alarm_CallBack[0] != NULL)
