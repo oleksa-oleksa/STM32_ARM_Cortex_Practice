@@ -30,7 +30,7 @@
 //#include "stm32f4xx_pwr.h"
 #include "stm32f4xx_rcc.h"
 //#include "stm32f4xx_rng.h"
-//#include "stm32f4xx_rtc.h"
+#include "stm32f4xx_rtc.h"
 //#include "stm32f4xx_sdio.h"
 //#include "stm32f4xx_spi.h"
 //#include "stm32f4xx_syscfg.h"
@@ -53,7 +53,7 @@
 //#include "interrupts.h"
 //#include "led.h"
 //#include "power.h"
-//#include "rtc.h"
+#include "rtc.h"
 //#include "taster.h"
 //#include "usart.h"
 //=========================================================================
@@ -101,6 +101,9 @@
 #define USART2_TX_BUFFERSIZE_50 50
 #define USART2_RX_BUFFERSIZE_50 1024
 
+#define RCT_MONDAY_ALARM 1
+#define RCT_THRIDS_ALARM 2
+
 
 //=========================================================================
 // Variablen
@@ -108,6 +111,7 @@
 //extern int counter;
 //extern char counter_char;
 extern int led_timer;
+extern int alarm_type;
 
 
 //=========================================================================
@@ -140,13 +144,14 @@ void button_2_handler();
 
 void deinit_button_1_irq();
 
+void get_sys_only_time();
 void get_sys_time();
 void usart2_send_time(RTC_TimeTypeDef time);
 int bcd_decimal(uint8_t hex);
 void usart2_send_date(RTC_DateTypeDef date);
 
-
-
+void set_RTC_Alarm_Mondays();
+void set_RTC_Alarm_Thirds();
 
 
 //=========================================================================

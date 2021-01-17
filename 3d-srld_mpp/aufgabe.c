@@ -7,6 +7,7 @@ char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
 char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
+int alarm_type = 0;
 
 char date_buf[5];
 
@@ -522,6 +523,19 @@ void usart2_send_date(RTC_DateTypeDef date) {
     usart2_send("\r\n");
 }
 
+void get_sys_only_time() {
+    RTC_TimeTypeDef sTime;
+    uint8_t buffer[20];
+
+    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
+    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
+    RTC_GetTime(RTC_Format_BCD, &sTime);
+
+    // The data is BCD coded so we need to
+    // convert a binary-coded decimal number into a decimal number in terms of representation
+    usart2_send_time(sTime);
+}
+
 void get_sys_time() {
     RTC_TimeTypeDef sTime;
     RTC_DateTypeDef sDate;
@@ -536,4 +550,98 @@ void get_sys_time() {
     // convert a binary-coded decimal number into a decimal number in terms of representation
     usart2_send_time(sTime);
     usart2_send_date(sDate);
+}
+
+
+RTC_TimeTypeDef RTC_Time_Aktuell; 	// 	Zeit
+RTC_DateTypeDef RTC_Date_Aktuell; 	// 	Datum
+RTC_AlarmTypeDef RTC_Alarm_Aktuell; //	Alarm
+RTC_AlarmTypeDef RTC_Alarm;
+
+// Anlegen der Structs zur Initialisierung
+RTC_TimeTypeDef RTC_Time_Struct; 	// 	Zeit
+RTC_DateTypeDef RTC_Date_Struct; 	// 	Datum
+RTC_AlarmTypeDef RTC_Alarm_Struct; 	//	Alarm
+RTC_InitTypeDef RTC_Init_Struct; 	//	Zeitformat und Vorteiler
+
+void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint32_t RTC_AlarmMask) {
+
+    _Bool setzen_moeglich = false;	
+	char alarmOutput[128];
+
+	//=== Alarm vor dem stellen ausschalten =========================
+	RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
+
+	//=== aktuelle Zeit auslesen ====================================
+	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Aktuell);
+	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Aktuell);
+
+	//=== Alarm Struct füllen =======================================
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_H12 = RTC_H12_AM;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = Std;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes = Min;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = Sek;
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = weekday;
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_WeekDay;
+	//=== Alarm Maske setzen ========================================
+	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask;
+
+    setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
+	sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds,
+			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
+	usart2_send_text(alarmOutput);
+
+	//=== Überläufe der Sek, Min, Std und Tage korrigieren ==========
+
+	//=== Wenn Alarmzeit einstellbar dann einstellen ================
+	if (setzen_moeglich == true)
+	{
+		// Init RTC Alarm A register
+		RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
+		// RTC Alarm A Interrupt freigeben
+		RTC_ITConfig(RTC_IT_ALRA, DISABLE);
+		// Alarm freigeben
+		RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
+		// Flag zurücksetzen
+		RTC_ClearFlag(RTC_FLAG_ALRAF);
+		// aktiviert für den ALARM A PC13 als Open Drain
+		// bei Alarm Low-Pegel
+		// zum Einschalten der Versorgungsspannung
+		RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
+		RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
+
+		RTC_ITConfig(RTC_IT_ALRA, ENABLE);
+		// Alarm freigeben
+		RTC_AlarmCmd(RTC_Alarm_A, ENABLE);
+    }
+}
+
+void print_weekday_of_alarm() {
+    RTC_GetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm);
+    char data[50] = { 0 };
+    if (IS_RTC_WEEKDAY(RTC_Alarm.RTC_AlarmDateWeekDay)) {
+        usart2_send_text("Alarm used weekday\r\n");
+    } else
+    {
+        usart2_send_text("Alarm used Date\r\n");
+        return(0);
+    }
+    char *weekdays[] = {"Mo", "Tue", "Wen", "Thu", "Fr"};
+    sprintf(data, "Alarm was set to the following weekday: %s.\r\n", weekdays[RTC_Alarm.RTC_AlarmDateWeekDay-1]);
+    usart2_send_text(data);
+}
+
+void set_RTC_Alarm_Mondays() {
+    set_RTC_Alarm(RTC_Weekday_Monday, 0, 30, 0, RTC_AlarmMask_None);
+    alarm_type = RCT_MONDAY_ALARM;
+    print_weekday_of_alarm();
+}
+
+void set_RTC_Alarm_Thirds() { // alarm each 30 secs of a minute
+    alarm_type = RCT_THRIDS_ALARM;
+    set_RTC_Alarm(RTC_Weekday_Saturday, 0, 0, 30, RTC_AlarmMask_DateWeekDay | RTC_AlarmMask_Hours | RTC_AlarmMask_Minutes); // mask anything but seconds
+    show_RTC_Alarm();
 }

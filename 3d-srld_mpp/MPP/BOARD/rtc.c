@@ -530,14 +530,14 @@ void show_RTC_Alarm(void) {
 	if ( RTC_Alarm_Aktuell.RTC_AlarmDateWeekDaySel == RTC_AlarmDateWeekDaySel_Date )
 	{
 		sprintf(data, "am %1.2d. Tag des Monats\r\n", RTC_Alarm_Aktuell.RTC_AlarmDateWeekDay);
-		usart2_send(data);
+		usart2_send_text(data);
 	}
 
 	// Wochentag
 	if ( RTC_Alarm_Aktuell.RTC_AlarmDateWeekDaySel == RTC_AlarmDateWeekDaySel_WeekDay )
 	{
 		sprintf(data, " am %s.\r\n", wochentag[RTC_Alarm_Aktuell.RTC_AlarmDateWeekDay]);
-		usart2_send(data);
+		usart2_send_text(data);
 	}
 }
 
@@ -772,7 +772,7 @@ _Bool set_RTC_Alarm_in(uint8_t Tagen, uint8_t Std, uint8_t Min, uint8_t Sek,
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Aktuell.RTC_Seconds
 			+ Sek;
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = RTC_Date_Aktuell.RTC_Date + Tagen;
-	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_Date;
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_WeekDay;
 	//=== Alarm Maske setzen ========================================
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask_None;
 	//=== Überläufe der Sek, Min, Std und Tage korrigieren ==========

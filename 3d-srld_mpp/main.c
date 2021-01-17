@@ -24,7 +24,11 @@ int main(void)
 
 
     our_init_board();
-
+    start_RTC_Alarm();
+    // Sheet 7 Exercise 3.3
+    // only execute one of the set_RTC_Alarm functions
+    //set_RTC_Alarm_Mondays();
+    set_RTC_Alarm_Thirds();
 
     while(1){
         // pause 1 sec

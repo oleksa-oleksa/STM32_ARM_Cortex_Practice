@@ -13,6 +13,7 @@
 #include "stm32f4xx_rng.h"
 #include "stm32f4xx_rtc.h"
 #include "stm32f4xx_syscfg.h"
+#include "../aufgabe.h"
 
 
 
@@ -97,6 +98,7 @@ uint32_t rtc_getSek(TimeBase tb);
 uint32_t convert_RTC_struct_to_sek(const RTC_TimeTypeDef *t, RTC_DateTypeDef *d, TimeBase tb);
 int convert_RTC_sek_to_struct(uint32_t sec, RTC_TimeTypeDef *t, RTC_DateTypeDef *d, TimeBase tb);
 
+_Bool Zeit_ueberlauf_Korektur(RTC_AlarmTypeDef* r);
 
 uint32_t Zufallszahl(void);
 
