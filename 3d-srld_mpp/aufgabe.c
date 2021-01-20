@@ -564,22 +564,22 @@ RTC_DateTypeDef RTC_Date_Struct; 	// 	Datum
 RTC_AlarmTypeDef RTC_Alarm_Struct; 	//	Alarm
 RTC_InitTypeDef RTC_Init_Struct; 	//	Zeitformat und Vorteiler
 
-void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint32_t RTC_AlarmMask) {
 
-    _Bool setzen_moeglich = false;	
+// this function is a modificated version of set_RCT_Alarm_in from rtc.c
+void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint32_t RTC_AlarmMask) {
+	
 	char alarmOutput[128];
 
-	//=== Alarm vor dem stellen ausschalten =========================
+	// disable alarm
 	RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
 
-	//=== Alarm Struct füllen =======================================
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_H12 = RTC_H12_AM;
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = Std;
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes = Min;
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = Sek;
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = weekday;
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_WeekDay;
-	//=== Alarm Maske setzen ========================================
+	// set alarm mask
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask;
 
 	sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
@@ -589,29 +589,25 @@ void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint3
 			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
 	usart2_send_text(alarmOutput);
 
-	//=== Überläufe der Sek, Min, Std und Tage korrigieren ==========
 
-	//=== Wenn Alarmzeit einstellbar dann einstellen ================
-	if (setzen_moeglich == true)
-	{
-		// Init RTC Alarm A register
-		RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
-		// RTC Alarm A Interrupt freigeben
-		RTC_ITConfig(RTC_IT_ALRA, DISABLE);
-		// Alarm freigeben
-		RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
-		// Flag zurücksetzen
-		RTC_ClearFlag(RTC_FLAG_ALRAF);
-		// aktiviert für den ALARM A PC13 als Open Drain
-		// bei Alarm Low-Pegel
-		// zum Einschalten der Versorgungsspannung
-		RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
-		RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
+    // init RTC alarm A register
+    RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
+    // disable RTC alarm A interrupt 
+    RTC_ITConfig(RTC_IT_ALRA, DISABLE);
+    // disable alarm
+    RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
+    // reset flag
+    RTC_ClearFlag(RTC_FLAG_ALRAF);
+    // activate ALARM A PC13 as Open Drain
+    // in case of the alarm begin polarity low
+    // to activate supply voltage
+    RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
+    RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
 
-		RTC_ITConfig(RTC_IT_ALRA, ENABLE);
-		// Alarm freigeben
-		RTC_AlarmCmd(RTC_Alarm_A, ENABLE);
-    }
+    // enable alarm interrupt
+    RTC_ITConfig(RTC_IT_ALRA, ENABLE);
+    // enable alarm
+    RTC_AlarmCmd(RTC_Alarm_A, ENABLE);
 }
 
 void print_weekday_of_alarm() {
@@ -629,7 +625,7 @@ void print_weekday_of_alarm() {
     usart2_send_text(data);
 }
 
-void set_RTC_Alarm_Mondays() {
+void set_RTC_Alarm_Mondays() { // alarm each monday at 00:30
     set_RTC_Alarm(RTC_Weekday_Monday, 0, 30, 0, RTC_AlarmMask_None);
     alarm_type = RTC_MONDAY_ALARM;
     print_weekday_of_alarm();
@@ -641,11 +637,13 @@ void set_RTC_Alarm_Thirds() { // alarm each 30 secs of a minute
     show_RTC_Alarm();
 }
 
-void set_RTC_Alarm_each_25_secs() {
+// this function is also a modificated version of set_RCT_Alarm_in from rtc.c
+void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the function is calles
     alarm_type = RTC_EVERY_25_SECS_ALARM;
     _Bool setzen_moeglich = false;	
 	char alarmOutput[128];
-    //=== aktuelle Zeit auslesen ====================================
+    
+    // get current time and date
 	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Aktuell);
 	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Aktuell);
 
@@ -653,12 +651,14 @@ void set_RTC_Alarm_each_25_secs() {
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_H12 = RTC_H12_AM;
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = RTC_Time_Aktuell.RTC_Hours;
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes = RTC_Time_Aktuell.RTC_Minutes;
-	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Aktuell.RTC_Seconds + 25; // check if we need to handle when > 60 secs
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Aktuell.RTC_Seconds + 25; 
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = RTC_Date_Aktuell.RTC_Date;
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_Date;
-	//=== Alarm Maske setzen ========================================
+	// set alarm mask
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask_None;
-    //=== Überläufe der Sek, Min, Std und Tage korrigieren ==========
+    
+    // handles any time/date overflow, meaning e.g. if RTC_Time_Aktuell.RTC_Seconds + 25 > 59 etc.
+    // function was already implemented in rtc.c
 	setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
 
     sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
@@ -668,27 +668,26 @@ void set_RTC_Alarm_each_25_secs() {
 			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
 	usart2_send_text(alarmOutput);
 
-	//=== Überläufe der Sek, Min, Std und Tage korrigieren ==========
-
-	//=== Wenn Alarmzeit einstellbar dann einstellen ================
+	// if time/data overflow could be handled, set alarm
 	if (setzen_moeglich == true)
 	{
-		// Init RTC Alarm A register
+		// init RTC alarm A register
 		RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
-		// RTC Alarm A Interrupt freigeben
+		// disable RTC alarm A interrupt
 		RTC_ITConfig(RTC_IT_ALRA, DISABLE);
-		// Alarm freigeben
+		// disable alarm
 		RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
-		// Flag zurücksetzen
+		// reset flag
 		RTC_ClearFlag(RTC_FLAG_ALRAF);
-		// aktiviert für den ALARM A PC13 als Open Drain
-		// bei Alarm Low-Pegel
-		// zum Einschalten der Versorgungsspannung
+		// activate ALARM A PC13 as Open Drain
+        // in case of the alarm begin polarity low
+        // to activate supply voltage
 		RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
 		RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
 
+        // enable alarm interrupt
 		RTC_ITConfig(RTC_IT_ALRA, ENABLE);
-		// Alarm freigeben
+		// enable alarm
 		RTC_AlarmCmd(RTC_Alarm_A, ENABLE);
     }
 }

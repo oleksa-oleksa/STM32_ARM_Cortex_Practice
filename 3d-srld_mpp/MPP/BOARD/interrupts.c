@@ -434,9 +434,10 @@ void RTC_Alarm_IRQHandler(void)
 	if(RTC_GetITStatus(RTC_IT_ALRA) != RESET)
 		{
 			usart2_send("\r\nALARM ALRA\r\n");
-			LED_GR_TOGGLE;
+			//LED_GR_TOGGLE;
 			RTC_ClearITPendingBit(RTC_IT_ALRA);
 			EXTI_ClearITPendingBit(EXTI_Line17);
+			// if condition checks which type of alarm is set
 			if (alarm_type == RTC_MONDAY_ALARM) {
 				get_sys_time();
 			}
@@ -446,7 +447,7 @@ void RTC_Alarm_IRQHandler(void)
 			if (alarm_type == RTC_EVERY_25_SECS_ALARM) {
 				get_sys_only_time();
 				LED_GR_TOGGLE;
-				set_RTC_Alarm_each_25_secs();
+				set_RTC_Alarm_each_25_secs(); // reset alarm to be triggered in the next 25 seconds
 			}
 			
 			//	if (RTC_Alarm_CallBack[0] != NULL)
