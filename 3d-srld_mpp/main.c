@@ -33,7 +33,13 @@ int main(void)
      low-speed external 32.768 kHz oscillator (LSE)
     */
     start_RTC();
+    start_RTC_Alarm();
 
+    // Sheet 7 Exercise 3
+    // only execute one of the set_RTC_Alarm functions
+    //set_RTC_Alarm_Mondays();
+    //set_RTC_Alarm_Thirds();
+    //set_RTC_Alarm_each_25_secs();
 
     while(1){
 

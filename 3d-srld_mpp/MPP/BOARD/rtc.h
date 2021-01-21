@@ -86,7 +86,7 @@ void show_RTC_Alarm(void);
 
 void set_RTC_from_NTPsec(uint64_t sec, int8_t Zeitzone);
 
-
+_Bool Zeit_ueberlauf_Korektur(RTC_AlarmTypeDef* r);
 _Bool set_RTC_Alarm_in(uint8_t Tagen, uint8_t Std, uint8_t Min, uint8_t Sek, void (*callback)(void));
 void set_autostart_in(uint8_t Tagen, uint8_t Std, uint8_t Min, uint8_t Sek);
 void set_autostart_zeit(uint8_t Tagen, uint8_t Std, uint8_t Min, uint8_t Sek);
