@@ -240,9 +240,9 @@ void our_init_board(){
     //init_usart_2_tx();
     init_usart_2_tx_rx();
 
-    usart2_send_text("\r\nNeustart\r\n");
-    usart2_send_text("=> UART RX/TX \r\n");
-    usart2_send_text("_____________\r\n");
+    usart2_send("\r\nNeustart\r\n");
+    usart2_send("=> UART RX/TX \r\n");
+    usart2_send("_____________\r\n");
 
     // print into terminal
     get_sys_time();
@@ -317,11 +317,8 @@ void USART2_GET_DATATIME(void)
 
             if (date_flag) {
                 parse_date(usart2_rx_buffer);
-
-                usart2_send_text("\r\n");
-                memset(usart2_rx_buffer,0x00,USART2_RX_BUFFERSIZE_50);
-
-                wait_mSek(1000);
+                usart2_send("\r\n");
+                // memset(usart2_rx_buffer,0x00,USART2_RX_BUFFERSIZE_50);
                 get_sys_time();
                 date_flag = 0;
                 dt_flag = 0;
@@ -329,8 +326,7 @@ void USART2_GET_DATATIME(void)
 
             if (time_flag) {
                 parse_time(usart2_rx_buffer);
-                usart2_send_text("\r\n");
-                wait_mSek(1000);
+                usart2_send("\r\n");
                 get_sys_time();
                 time_flag = 0;
                 dt_flag = 0;
@@ -362,7 +358,7 @@ void USART2_GET_DATATIME(void)
         {
             usart2_rx_buffer[j] = c;
             j++;
-            if (j >= 30) { j = 0; }
+            if (j >= USART2_RX_BUFFERSIZE_50) { j = 0; }
         }
     }
 }
@@ -568,54 +564,35 @@ int bcd_decimal(uint8_t hex)
 
 void usart2_send_time(RTC_TimeTypeDef time) {
     usart2_send("Time: ");
-    /*
-    int hours = bcd_decimal(time.RTC_Hours);
-    int minutes = bcd_decimal(time.RTC_Minutes);
-    int seconds = bcd_decimal(time.RTC_Seconds);
 
-    char *snd[100];
-    sprintf(snd, "Time: %i:%i:%i\r\n", hours, minutes, seconds);
-    usart2_send(snd);
-
-    */
     int hours = bcd_decimal(time.RTC_Hours);
-    sprintf(date_buf, "%i", hours);
+    sprintf(date_buf, "%02i", hours);
     usart2_send(date_buf);
     usart2_send(":");
 
     int minutes = bcd_decimal(time.RTC_Minutes);
-    sprintf(date_buf, "%i", minutes);
+    sprintf(date_buf, "%02i", minutes);
     usart2_send(date_buf);
     usart2_send(":");
 
     int seconds = bcd_decimal(time.RTC_Seconds);
-    sprintf(date_buf, "%i", seconds);
+    sprintf(date_buf, "%02i", seconds);
     usart2_send(date_buf);
     usart2_send("\r\n");
 }
 
 void usart2_send_date(RTC_DateTypeDef date) {
-    /*
-    int day = bcd_decimal(date.RTC_Date);
-    int month = bcd_decimal(date.RTC_Month);
-    int year = bcd_decimal(date.RTC_Year);
-
-    char snd[100];
-    sprintf(snd, "Date: %i.%i.%i\r\n", day, month, year);
-    usart2_send(snd);
-
-    */
     usart2_send("Date: ");
     int day = bcd_decimal(date.RTC_Date);
-    sprintf(date_buf, "%i", day);
+    sprintf(date_buf, "%02i", day);
     usart2_send(date_buf);
     usart2_send(".");
     int month = bcd_decimal(date.RTC_Month);
-    sprintf(date_buf, "%i", month);
+    sprintf(date_buf, "%02i", month);
     usart2_send(date_buf);
     usart2_send(".");
     int year = bcd_decimal(date.RTC_Year);
-    sprintf(date_buf, "%i", year);
+    sprintf(date_buf, "%02i", year);
     usart2_send(date_buf);
     usart2_send("\r\n");
 
@@ -636,10 +613,24 @@ void get_sys_time() {
     usart2_send_date(sDate);
 }
 
-/* Recursive one liner */
-uint32_t dec2bcd_r(uint16_t dec)
+uint8_t bcd2byte(uint8_t Value)
 {
-    return (dec) ? ((dec2bcd_r( dec / 10 ) << 4) + (dec % 10)) : 0;
+    uint8_t tmp = 0;
+    tmp = ((uint8_t)(Value & (uint8_t)0xF0) >> (uint8_t)0x4) * 10;
+    return (tmp + (Value & (uint8_t)0x0F));
+}
+
+uint8_t byte2bcd(uint8_t Value)
+{
+    uint8_t bcdhigh = 0;
+
+    while (Value >= 10)
+    {
+        bcdhigh++;
+        Value -= 10;
+    }
+
+    return  ((uint8_t)(bcdhigh << 4) | Value);
 }
 
 void parse_date(char * rx_buf) {
@@ -648,34 +639,26 @@ void parse_date(char * rx_buf) {
     usart2_send("\r\n");
 
     RTC_DateTypeDef sDate;
-    // keep the current time
-    RTC_TimeTypeDef sTime;
-    RTC_GetTime(RTC_Format_BCD, &sTime);
-
-
     uint32_t date;
     uint32_t month;
     uint32_t year;
 
-    char *p1, *p2;
-
-    uint32_t r = sscanf(rx_buf, "%i/%i/%i", &date, &month, &year);
+    uint32_t r = sscanf(rx_buf, "%0i/%0i/%0i", &date, &month, &year);
 
     if (r < 3) {
         usart2_send("Invalid date format\r\n");
         return;
     }
+    memset(&sDate, 0, sizeof(RTC_DateTypeDef));
 
-    sDate.RTC_Date = dec2bcd_r(date);
-    sDate.RTC_Month = dec2bcd_r(month);
-    sDate.RTC_Year = dec2bcd_r(year);
+    sDate.RTC_Date = byte2bcd(date);
+    sDate.RTC_Month = byte2bcd(month);
+    sDate.RTC_Year = byte2bcd(year);
 
-    RTC_SetDate(RTC_Format_BCD, &sDate);
-    RTC_SetTime(RTC_Format_BCD, &sTime);
-
-    //usart2_send("Date parsed and converted\r\n");
-
-
+    if (ERROR == RTC_SetDate(RTC_Format_BCD, &sDate))
+    {
+        usart2_printf("Error setting date");
+    }
 }
 
 void parse_time(char * rx_buf) {
@@ -683,33 +666,24 @@ void parse_time(char * rx_buf) {
     usart2_send(rx_buf);
     usart2_send("\r\n");
 
-    // keep the current date
-    RTC_DateTypeDef sDate;
     RTC_TimeTypeDef sTime;
-
-    RTC_GetDate(RTC_Format_BCD, &sDate);
-
     uint32_t hour;
     uint32_t minutes;
     uint32_t seconds;
 
-    char *p1, *p2;
-
-    uint32_t r = sscanf(rx_buf, "%i/%i/%i", &hour, &minutes, &seconds);
+    uint32_t r = sscanf(rx_buf, "%0i/%0i/%0i", &hour, &minutes, &seconds);
 
     if (r < 3) {
-        usart2_send("Invalid date format\r\n");
+        usart2_send("Invalid time format\r\n");
         return;
     }
 
-    sTime.RTC_Hours= dec2bcd_r(hour);
-    sTime.RTC_Minutes = dec2bcd_r(minutes);
-    sTime.RTC_Seconds = dec2bcd_r(seconds);
+    memset(&sTime, 0, sizeof(RTC_TimeTypeDef));
+    sTime.RTC_Hours= byte2bcd(hour);
+    sTime.RTC_Minutes = byte2bcd(minutes);
+    sTime.RTC_Seconds = byte2bcd(seconds);
 
-    RTC_SetDate(RTC_Format_BCD, &sDate);
+    // RTC_SetDate(RTC_Format_BCD, &sDate);
     RTC_SetTime(RTC_Format_BCD, &sTime);
-
-    //usart2_send("Time parsed and converted\r\n");
-
 
 }
