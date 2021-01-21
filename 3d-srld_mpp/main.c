@@ -25,7 +25,7 @@ int main(void)
 
 
     our_init_board();
-    // Sheet 7 Exercise 3.3
+    // Sheet 7 Exercise 3
     // only execute one of the set_RTC_Alarm functions
     //set_RTC_Alarm_Mondays();
     //set_RTC_Alarm_Thirds();
