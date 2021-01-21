@@ -237,6 +237,7 @@ void our_init_board(){
 
     //init_usart_2_tx();
     init_usart_2_tx_rx();
+    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
 
     usart2_send_text("\r\nNeustart\r\n");
     usart2_send_text("=> UART RX/TX \r\n");
