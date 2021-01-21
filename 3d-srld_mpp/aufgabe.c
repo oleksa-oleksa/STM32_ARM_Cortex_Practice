@@ -8,6 +8,10 @@ char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
 char date_buf[5];
+int date_flag = 0;
+int time_flag = 0;
+int dt_flag = 0;
+
 
 // sudo chmod 0777 /dev/ttyUSB0
 
@@ -240,6 +244,9 @@ void our_init_board(){
     usart2_send_text("=> UART RX/TX \r\n");
     usart2_send_text("_____________\r\n");
 
+    // print into terminal
+    get_sys_time();
+
     //init_iwdg();
     //usart2_send_text("=> IWDG \r\n");
 
@@ -302,15 +309,24 @@ void USART2_GET_DATATIME(void)
         {
             usart2_rx_buffer[j] = 0x00 ;
 
+            if (date_flag) {
+                parse_date(usart2_rx_buffer);
+                wait_mSek(1000);
+                get_sys_time();
+                date_flag = 0;
+                dt_flag = 0;
+            }
 
-            // Assignment 4, task 2.7
+            // Assignment 7, task 2.2
             // case: set Time and Date, LED will be turned off for a silence purpose
             if (usart2_rx_buffer[0] == 'd') {
                 strcpy(usart2_tx_buffer, "Enter date in format DD.MM:YYYY!\r\n");
-                parse_date(usart2_rx_buffer);
+                date_flag = 1;
+                dt_flag = 1;
             }
 
-            else {
+
+            else if (!dt_flag) {
                 strcpy(usart2_tx_buffer, "Only d (date) und t (time) are expected!\r\n");
                 // Assignment 4, task 2.7
                 //sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
@@ -575,18 +591,37 @@ void get_sys_time() {
     usart2_send_date(sDate);
 }
 
+/* Recursive one liner */
+uint32_t dec2bcd_r(uint16_t dec)
+{
+    return (dec) ? ((dec2bcd_r( dec / 10 ) << 4) + (dec % 10)) : 0;
+}
+
 void parse_date(char * rx_buf) {
+    usart2_send("New date to set: ");
+    usart2_send(rx_buf);
+    usart2_send("\r\n");
+
     RTC_DateTypeDef sDate;
+    // keep the current time
+    RTC_TimeTypeDef sTime;
+    RTC_GetTime(RTC_Format_BCD, &sTime);
 
-    uint8_t date;
-    uint8_t month;
-    uint8_t year;
 
+    uint16_t date;
+    uint16_t month;
+    uint16_t year;
 
-    sscanf(rx_buf, "%2i:%2i:%4i", &date, &month, &year);
+    sscanf(rx_buf, "%2i.%2i.%4i", &date, &month, &year);
 
-    //RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct)
+    sDate.RTC_Date = dec2bcd_r(date);
+    sDate.RTC_Month = dec2bcd_r(month);
+    sDate.RTC_Year = dec2bcd_r(year);
 
+    RTC_SetDate(RTC_Format_BCD, &sDate);
+    RTC_SetTime(RTC_Format_BCD, &sTime);
+
+    usart2_send("Date parsed and converted\r\n");
 
 
 }

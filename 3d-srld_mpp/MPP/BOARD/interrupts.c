@@ -472,7 +472,8 @@ void ADC_IRQHandler(void){
 void USART2_IRQHandler(void)
 {
     //===== USART2
-    usart2_send("USART2_IRQn\r\n");
+    // uncomment to detect interrupt is fired
+    //usart2_send("USART2_IRQn\r\n");
     // original function
     //USART2_IRQ();
 
