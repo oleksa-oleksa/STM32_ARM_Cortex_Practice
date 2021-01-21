@@ -166,6 +166,7 @@ int bcd_decimal(uint8_t hex);
 void usart2_send_date(RTC_DateTypeDef date);
 
 void parse_date(char * rx_buf);
+void parse_time(char * rx_buf);
 uint32_t dec2bcd_r(uint16_t dec);
 
 
