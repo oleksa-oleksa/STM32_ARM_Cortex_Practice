@@ -576,7 +576,7 @@ void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint3
 	// set alarm mask
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask;
 
-	sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
+	sprintf(alarmOutput, "RTC alarm set to %d:%d:%d on the %d(rd/th) day of the month\r\n",
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds,
@@ -655,7 +655,7 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
 	// if time/data overflow could be handled, set alarm
 	if (setzen_moeglich == true)
 	{
-        sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
+        sprintf(alarmOutput, "RTC alarm set to %d:%d:%d on the %d(rd/th) day of the month\r\n",
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
 			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds,
