@@ -98,7 +98,7 @@ void SysTick_Handler(void)
     // because otherwise with while(1)-loop will be blocked
     // the UART-2 IRQ Handler
     // Assignment 4
-    /*
+
     static  unsigned  long  SysTickCounter = 0;
     SysTickCounter++;
     if (SysTickCounter  == led_timer) {
@@ -116,7 +116,6 @@ void SysTick_Handler(void)
         SysTickCounter = 0;
         LED_GR_OFF;
      }
-    */
     //======================================================================
 
 
@@ -473,7 +472,7 @@ void ADC_IRQHandler(void){
 //=========================================================================
 void USART2_IRQHandler(void)
 {
-	//===== USART2
+    //===== USART2
     usart2_send("USART2_IRQn\r\n");
     // original function
     //USART2_IRQ();
@@ -482,11 +481,11 @@ void USART2_IRQHandler(void)
     // USART2_IRQ_LED_CONTROL();
 
     // Assignment 6: LED Control via UART
+    // USART2_IRQ_LED_CONTROL_WITH_OFF();
+
     // Assignment 7: Set Date and Time via UART
-    USART2_IRQ_LED_CONTROL_WITH_OFF();
+    USART2_IRQ_SET_DATATIME();
 }
-
-
 //=========================================================================
 void UART5_IRQHandler(void)
 {

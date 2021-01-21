@@ -23,8 +23,8 @@ int main(void)
     // In the initial situation, the green LED should be switched off.
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
     // Both buttons on PC8 and PC5 should be interrupt capable
-    init_button_1_irq();
-    init_button_2_irq();
+    //init_button_1_irq();
+    //init_button_2_irq();
 
     our_init_board();
 
@@ -34,8 +34,11 @@ int main(void)
 
     while(1){
 
-        wait_mSek(1000);
-        get_sys_time();
+        //wait_mSek(1000);
+        //get_sys_time();
+        
+        timer = 1000; // 1 second
+        while (timer) {;}
 
     }
     return 0; // to make the warning stop

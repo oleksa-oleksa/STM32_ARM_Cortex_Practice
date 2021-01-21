@@ -194,8 +194,8 @@ void init_usart_2_tx_rx() {
 
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
@@ -246,10 +246,6 @@ void our_init_board(){
     //init_iwdg();
     //usart2_send_text("=> IWDG \r\n");
 
-
-    //init_BEEPER();
-    //usart2_send_text("=> BEEPER OFF (!) \r\n");
-    //usart2_send_text("_____________\r\n");
 }
 
 void USART2_IRQ_LED_CONTROL(void)
@@ -323,11 +319,47 @@ void USART2_IRQ_LED_CONTROL_WITH_OFF() {
                 led_timer = 0;
             }
 
+            // Assignment 4, task 2.7
             // case: set Time and Date, LED will be turned off for a silence purpose
             else if (usart2_rx_buffer[0] == 'd') {
                 strcpy(usart2_tx_buffer, "Enter date!\r\n");
                 LED_GR_OFF;
                 led_timer = 0;
+            }
+
+            else {
+                //strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
+                // Assignment 4, task 2.7
+                sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+            }
+
+            usart2_send(usart2_tx_buffer);
+            memset(usart2_rx_buffer,0x00,20);
+            j=0;
+        }
+        else
+        {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= 30) { j = 0; }
+        }
+    }
+}
+
+void USART2_IRQ_SET_DATATIME() {
+    char c;
+    static int j = 0;
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+        if (c=='\r')	// End of string input
+        {
+            usart2_rx_buffer[j] = 0x00 ;
+
+                // Assignment 4, task 2.7
+                // case: set Time and Date, LED will be turned off for a silence purpose
+            if (usart2_rx_buffer[0] == 'd') {
+                strcpy(usart2_tx_buffer, "Enter date!\r\n");
             }
 
             else {
@@ -384,9 +416,9 @@ void init_button_1_irq() {
      * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
     NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
     /* Set priority: This parameter can be a value between 0 and 15 */
-    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x02;
     /* Set sub priority */
-    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x00;
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x02;
     /* Enable interrupt */
     NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
     /* Add to NVIC */

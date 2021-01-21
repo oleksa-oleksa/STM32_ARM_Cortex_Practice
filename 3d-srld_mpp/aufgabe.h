@@ -129,7 +129,8 @@ void usart2_print();
 
 void USART2_IRQ_LED_CONTROL();
 void USART2_IRQ_LED_CONTROL_WITH_OFF();
-
+void USART2_IRQHandler(void);
+void USART2_IRQ_SET_DATATIME();
 void init_iwdg();
 
 void init_button_1_irq();
