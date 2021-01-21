@@ -9,9 +9,6 @@ unsigned char usart2_busy = 0;
 int led_timer = 1000;
 char date_buf[5];
 
-
-char date_buf[5];
-
 // sudo chmod 0777 /dev/ttyUSB0
 
 /* Init the GPIO as Output Push Pull with Pull-up
@@ -293,6 +290,51 @@ void USART2_IRQ_LED_CONTROL(void)
     }
 }
 
+
+void USART2_GET_DATATIME(void)
+{
+    char c;
+    static int j = 0;
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+        if (c=='\r')	// End of string input
+        {
+            usart2_rx_buffer[j] = 0x00 ;
+
+
+            // Assignment 4, task 2.7
+            // case: set Time and Date, LED will be turned off for a silence purpose
+            if (usart2_rx_buffer[0] == 'd') {
+                strcpy(usart2_tx_buffer, "Enter date dd:mm:yyyy!\r\n");
+                LED_GR_OFF;
+                led_timer = 0;
+            }
+
+            else {
+                strcpy(usart2_tx_buffer, "Only d (date) und t (time) are expected!\r\n");
+                // Assignment 4, task 2.7
+                //sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+            }
+
+            usart2_send(usart2_tx_buffer);
+            memset(usart2_rx_buffer,0x00,20);
+            j=0;
+        }
+        else
+        {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= 30) { j = 0; }
+        }
+    }
+}
+
+
+
+void toggle_led_ms(int s) {
+}
+
 void USART2_IRQ_LED_CONTROL_WITH_OFF() {
     char c;
     static int j = 0;
@@ -319,8 +361,7 @@ void USART2_IRQ_LED_CONTROL_WITH_OFF() {
                 led_timer = 0;
             }
 
-            // Assignment 4, task 2.7
-            // case: set Time and Date, LED will be turned off for a silence purpose
+                // case: set Time and Date, LED will be turned off for a silence purpose
             else if (usart2_rx_buffer[0] == 'd') {
                 strcpy(usart2_tx_buffer, "Enter date!\r\n");
                 LED_GR_OFF;
@@ -345,42 +386,6 @@ void USART2_IRQ_LED_CONTROL_WITH_OFF() {
         }
     }
 }
-
-void USART2_IRQ_SET_DATATIME() {
-    char c;
-    static int j = 0;
-    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
-    {
-        c = (char)USART_ReceiveData(USART2);
-        if (c=='\r')	// End of string input
-        {
-            usart2_rx_buffer[j] = 0x00 ;
-
-                // Assignment 4, task 2.7
-                // case: set Time and Date, LED will be turned off for a silence purpose
-            if (usart2_rx_buffer[0] == 'd') {
-                strcpy(usart2_tx_buffer, "Enter date!\r\n");
-            }
-
-            else {
-                //strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
-                // Assignment 4, task 2.7
-                sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
-            }
-
-            usart2_send(usart2_tx_buffer);
-            memset(usart2_rx_buffer,0x00,20);
-            j=0;
-        }
-        else
-        {
-            usart2_rx_buffer[j] = c;
-            j++;
-            if (j >= 30) { j = 0; }
-        }
-    }
-}
-
 
 void init_button_1_irq() {
     // pressed - 0, not pressed - 1: LOW ACTIVE -> HL for trigger
@@ -566,7 +571,6 @@ void usart2_send_date(RTC_DateTypeDef date) {
 void get_sys_time() {
     RTC_TimeTypeDef sTime;
     RTC_DateTypeDef sDate;
-    uint8_t buffer[20];
 
     // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
     // With these functions we copy data from TRC registers to our two variables (sTime and sDate).

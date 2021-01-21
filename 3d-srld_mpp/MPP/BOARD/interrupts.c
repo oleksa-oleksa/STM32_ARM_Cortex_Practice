@@ -7,7 +7,6 @@ int counter_button_1 = 0;
 char counter_buf[5];
 int button_1_enabled = 0;
 
-
 void hard_fault_handler_c(unsigned int * hardfault_args);
 
 //=========================================================================
@@ -272,31 +271,31 @@ void EXTI9_5_IRQHandler(void)
     /* PC5 is connected to EXTI_Line5 */
 
     if (EXTI_GetITStatus(EXTI_Line5) == SET)
-		{
-			EXTI_ClearFlag(EXTI_Line5);
-			EXTI_ClearITPendingBit(EXTI_Line5);
-			usart2_send("EXTI5_IRQn\r\n");
-			//TASTER2_IRQ();
-            /* PC5 CASE: */
-            // The ISR should switch off the green LED on PB2.
-            button_2_handler();
+    {
+        EXTI_ClearFlag(EXTI_Line5);
+        EXTI_ClearITPendingBit(EXTI_Line5);
+        usart2_send("EXTI5_IRQn\r\n");
+        //TASTER2_IRQ();
+        /* PC5 CASE: */
+        // The ISR should switch off the green LED on PB2.
+        button_2_handler();
 
-            // counter preparations
-            if (!button_1_enabled) {
-                counter_button_2++;
-                sprintf(counter_buf, "%i", counter_button_2);
-                usart2_send("Button 1 disabled, button 2 is pressed times: ");
-                usart2_send(counter_buf);
-                usart2_send("\r\n");
-            }
+        // counter preparations
+        if (!button_1_enabled) {
+            counter_button_2++;
+            sprintf(counter_buf, "%i", counter_button_2);
+            usart2_send("Button 1 disabled, button 2 is pressed times: ");
+            usart2_send(counter_buf);
+            usart2_send("\r\n");
+        }
 
-            if (counter_button_2 == 2) {
-                usart2_send("Interrupt enabled!\r\n");
-                init_button_1_irq();
-                button_1_enabled = 1;
-                counter_button_2 = 0;
-            }
-		}
+        if (counter_button_2 == 2) {
+            usart2_send("Interrupt enabled!\r\n");
+            init_button_1_irq();
+            button_1_enabled = 1;
+            counter_button_2 = 0;
+        }
+    }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)
 		{
@@ -311,36 +310,36 @@ void EXTI9_5_IRQHandler(void)
 			EXTI_ClearITPendingBit(EXTI_Line7);
 		    usart2_send("EXTI7_IRQn\r\n");
 		}
-	//===== Button 1
+
     // Assignment 6: Interrupts
     /* Make sure that interrupt flag is set */
     /* PC8 is connected to EXTI_Line8 */
-	if (EXTI_GetITStatus(EXTI_Line8) == SET)
-		{
-	        EXTI_ClearFlag(EXTI_Line8);
-			EXTI_ClearITPendingBit(EXTI_Line8);
-		    usart2_send("Button 1 pressed EXTI8_IRQn\r\n");
-			//TASTER1_IRQ();
-            /* PC8 CASE: */
-            // The ISR should switch on the green LED on PB2.
-            button_1_handler();
+    if (EXTI_GetITStatus(EXTI_Line8) == SET)
+    {
+        EXTI_ClearFlag(EXTI_Line8);
+        EXTI_ClearITPendingBit(EXTI_Line8);
+        usart2_send("Button 1 pressed EXTI8_IRQn\r\n");
+        //TASTER1_IRQ();
+        /* PC8 CASE: */
+        // The ISR should switch on the green LED on PB2.
+        button_1_handler();
 
-            // counter preparations
-            button_1_enabled = 1;
-            counter_button_1++;
-            sprintf(counter_buf, "%i", counter_button_1);
-            usart2_send(counter_buf);
-            usart2_send("\r\n");
+        // counter preparations
+        button_1_enabled = 1;
+        counter_button_1++;
+        sprintf(counter_buf, "%i", counter_button_1);
+        usart2_send(counter_buf);
+        usart2_send("\r\n");
 
-            if (counter_button_1 == 10) {
-                usart2_send("Interrupt disabled!\r\n");
-                deinit_button_1_irq();
-                button_1_enabled = 0;
-                // restore interrupt
-                init_button_2_irq();
-                counter_button_1 = 0;
-            }
-		}
+        if (counter_button_1 == 10) {
+            usart2_send("Interrupt disabled!\r\n");
+            deinit_button_1_irq();
+            button_1_enabled = 0;
+            // restore interrupt
+            init_button_2_irq();
+            counter_button_1 = 0;
+        }
+    }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line9) == SET)
 		{
@@ -484,7 +483,7 @@ void USART2_IRQHandler(void)
     // USART2_IRQ_LED_CONTROL_WITH_OFF();
 
     // Assignment 7: Set Date and Time via UART
-    USART2_IRQ_SET_DATATIME();
+    USART2_GET_DATATIME();
 }
 //=========================================================================
 void UART5_IRQHandler(void)

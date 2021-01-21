@@ -28,17 +28,20 @@ int main(void)
 
     our_init_board();
 
-    /* Start der Real Time Clock */
+    /* Start der Real Time Clock
+    if RTC was not started, will be initialize with
+     low-speed external 32.768 kHz oscillator (LSE)
+    */
     start_RTC();
 
 
     while(1){
 
-        //wait_mSek(1000);
-        //get_sys_time();
-        
-        timer = 1000; // 1 second
-        while (timer) {;}
+        // We set NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+        // and implement everything in IRQ_Handler
+
+        wait_mSek(1000);
+        get_sys_time();
 
     }
     return 0; // to make the warning stop

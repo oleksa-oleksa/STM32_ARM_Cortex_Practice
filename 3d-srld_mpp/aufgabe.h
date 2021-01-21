@@ -147,5 +147,23 @@ int bcd_decimal(uint8_t hex);
 void usart2_send_date(RTC_DateTypeDef date);
 
 
+void USART2_IRQ_LED_CONTROL_WITH_OFF();
+void USART2_GET_DATATIME(void);
+
+void init_iwdg();
+
+void init_button_1_irq();
+void init_button_2_irq();
+
+void button_1_handler();
+void button_2_handler();
+
+void deinit_button_1_irq();
+
+void get_sys_time();
+void usart2_send_time(RTC_TimeTypeDef time);
+int bcd_decimal(uint8_t hex);
+void usart2_send_date(RTC_DateTypeDef date);
+
 //=========================================================================
 #endif
