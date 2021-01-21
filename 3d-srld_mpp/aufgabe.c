@@ -553,16 +553,11 @@ void get_sys_time() {
 }
 
 
-RTC_TimeTypeDef RTC_Time_Aktuell; 	// 	Zeit
-RTC_DateTypeDef RTC_Date_Aktuell; 	// 	Datum
-RTC_AlarmTypeDef RTC_Alarm_Aktuell; //	Alarm
+RTC_TimeTypeDef RTC_Time_Current;
+RTC_DateTypeDef RTC_Date_Current;
 RTC_AlarmTypeDef RTC_Alarm;
 
-// Anlegen der Structs zur Initialisierung
-RTC_TimeTypeDef RTC_Time_Struct; 	// 	Zeit
-RTC_DateTypeDef RTC_Date_Struct; 	// 	Datum
-RTC_AlarmTypeDef RTC_Alarm_Struct; 	//	Alarm
-RTC_InitTypeDef RTC_Init_Struct; 	//	Zeitformat und Vorteiler
+RTC_AlarmTypeDef RTC_Alarm_Struct;
 
 
 // this function is a modificated version of set_RCT_Alarm_in from rtc.c
@@ -644,20 +639,20 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
 	char alarmOutput[128];
     
     // get current time and date
-	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Aktuell);
-	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Aktuell);
+	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Current);
+	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Current);
 
 
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_H12 = RTC_H12_AM;
-	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = RTC_Time_Aktuell.RTC_Hours;
-	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes = RTC_Time_Aktuell.RTC_Minutes;
-	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Aktuell.RTC_Seconds + 25; 
-	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = RTC_Date_Aktuell.RTC_Date;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours = RTC_Time_Current.RTC_Hours;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes = RTC_Time_Current.RTC_Minutes;
+	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Current.RTC_Seconds + 25; 
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = RTC_Date_Current.RTC_Date;
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_Date;
 	// set alarm mask
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask_None;
     
-    // handles any time/date overflow, meaning e.g. if RTC_Time_Aktuell.RTC_Seconds + 25 > 59 etc.
+    // handles any time/date overflow, meaning e.g. if RTC_Time_Current.RTC_Seconds + 25 > 59 etc.
     // function was already implemented in rtc.c
 	setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
 
