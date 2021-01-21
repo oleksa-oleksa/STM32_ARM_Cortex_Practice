@@ -612,7 +612,7 @@ void parse_date(char * rx_buf) {
     uint16_t month;
     uint16_t year;
 
-    sscanf(rx_buf, "%2i.%2i.%4i", &date, &month, &year);
+    sscanf(rx_buf, "%2i.%2i.%4i", date, month, year);
 
     sDate.RTC_Date = dec2bcd_r(date);
     sDate.RTC_Month = dec2bcd_r(month);
