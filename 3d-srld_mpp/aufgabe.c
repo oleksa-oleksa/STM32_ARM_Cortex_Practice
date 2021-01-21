@@ -7,6 +7,10 @@ char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
 char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
+char date_buf[5];
+
+// sudo chmod 0777 /dev/ttyUSB0
+
 
 
 /* Init the GPIO as Output Push Pull with Pull-up
@@ -275,6 +279,292 @@ void USART2_IRQ_LED_CONTROL(void)
     }
 }
 
+void USART2_GET_DATATIME(void)
+{
+    char c;
+    static int j = 0;
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+        if (c=='\r')	// End of string input
+        {
+            usart2_rx_buffer[j] = 0x00 ;
+
+            if (usart2_rx_buffer[0] == 'd') {
+                strcpy(usart2_tx_buffer, "Enter date: dd.mm.yyyy\r\n");
+                led_timer = 1000;
+            }
+
+            else {
+                strcpy(usart2_tx_buffer, "Only d (date) oder t (time) are expected!\r\n");
+                // Assignment 4, task 2.7
+                //sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+            }
+
+            usart2_send(usart2_tx_buffer);
+            memset(usart2_rx_buffer,0x00,20);
+            j=0;
+        }
+        else
+        {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= 30) { j = 0; }
+        }
+    }
+}
+
 
 void toggle_led_ms(int s) {
 }
+
+void USART2_IRQ_LED_CONTROL_WITH_OFF() {
+    char c;
+    static int j = 0;
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+        if (c=='\r')	// End of string input
+        {
+            usart2_rx_buffer[j] = 0x00 ;
+
+            if (usart2_rx_buffer[0] == '1') {
+                strcpy(usart2_tx_buffer, "grüne LED im 1 Sekundentakt\r\n");
+                led_timer = 1000;
+            }
+
+            else if (usart2_rx_buffer[0] == '4') {
+                strcpy(usart2_tx_buffer, "grüne LED im 4 Sekundentakt\r\n");
+                led_timer = 4000;
+            }
+
+            else if (usart2_rx_buffer[0] == 's') {
+                strcpy(usart2_tx_buffer, "grüne LED ist AUS\r\n");
+                LED_GR_OFF;
+                led_timer = 0;
+            }
+
+                // case: set Time and Date, LED will be turned off for a silence purpose
+            else if (usart2_rx_buffer[0] == 'd') {
+                strcpy(usart2_tx_buffer, "Enter date!\r\n");
+                LED_GR_OFF;
+                led_timer = 0;
+            }
+
+            else {
+                //strcpy(usart2_tx_buffer, "Nur 1, 2 oder 4 sind erwartet!\r\n");
+                // Assignment 4, task 2.7
+                sprintf(usart2_tx_buffer, "  Zeichenkette=%s Länge=%d\r\n", usart2_rx_buffer, j);
+            }
+
+            usart2_send(usart2_tx_buffer);
+            memset(usart2_rx_buffer,0x00,20);
+            j=0;
+        }
+        else
+        {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= 30) { j = 0; }
+        }
+    }
+}
+
+
+void init_button_1_irq() {
+    // pressed - 0, not pressed - 1: LOW ACTIVE -> HL for trigger
+    // PC8 button1 delivers an interrupt on a HL edge
+    // for initial GPIO initialization the previously created function from assignment 2 is used
+    init_button_1();
+
+    /* Set variables used for IRQ */
+    EXTI_InitTypeDef EXTI_InitStruct;
+    NVIC_InitTypeDef NVIC_InitStruct;
+
+    /* Enable clock for SYSCFG */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Use PC8 for EXTI_Line8 */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource8);
+
+    /* PC8 is connected to EXTI_Line8 */
+    EXTI_InitStruct.EXTI_Line = EXTI_Line8;
+    /* Enable interrupt */
+    EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+    /* Interrupt mode */
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    /* Triggers on HL High -> Low falling edge
+     * A change of state, i.e. an edge, serves as a start or stop condition.*/
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    /* Add to EXTI */
+    EXTI_Init(&EXTI_InitStruct);
+
+    /* Add IRQ vector to NVIC */
+    /* PC8 is connected to EXTI9_5_IRQn
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
+    NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+    /* Set priority: This parameter can be a value between 0 and 15 */
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
+    /* Set sub priority */
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x00;
+    /* Enable interrupt */
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    /* Add to NVIC */
+    NVIC_Init(&NVIC_InitStruct);
+}
+
+void init_button_2_irq() {
+    // pressed - 1, not pressed - 0: LOW ACTIVE -> LH for trigger ___|--
+    // Active-HIGH button means that when you press/close the switch, then the signal sent to the MCU will be HIGH.
+    // PC8 button1 delivers an interrupt on a LH edge
+    // for initial GPIO initialization the previously created function from assignment 2 is used
+    init_button_2();
+
+    /* Set variables used for IRQ */
+    EXTI_InitTypeDef EXTI_InitStruct;
+    NVIC_InitTypeDef NVIC_InitStruct;
+
+    /* Enable clock for SYSCFG */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Use PC5 for EXTI_Line5 */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource5);
+
+    /* PC5 is connected to EXTI_Line5 */
+    EXTI_InitStruct.EXTI_Line = EXTI_Line5;
+    /* Enable interrupt */
+    EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+    /* Interrupt mode */
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    /* A change of state, i.e. an edge, serves as a start or stop condition.*/
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    /* Add to EXTI */
+    EXTI_Init(&EXTI_InitStruct);
+
+    /* Add IRQ vector to NVIC */
+    /* PC5 is connected to EXTI9_5_IRQn
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQ */
+    NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+    /* Set priority: This parameter can be a value between 0 and 15 */
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x01;
+    /* Set sub priority */
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x01;
+    /* Enable interrupt */
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    /* Add to NVIC */
+    NVIC_Init(&NVIC_InitStruct);
+}
+
+void button_1_handler() {
+    GR_LED_ON;
+    usart2_send("Green LED is ON\r\n");
+}
+void button_2_handler() {
+    GR_LED_OFF;
+    usart2_send("Green LED is OFF\r\n");
+}
+
+void deinit_button_1_irq() {
+    /* Set variables used for IRQ */
+    EXTI_InitTypeDef EXTI_InitStruct;
+    NVIC_InitTypeDef NVIC_InitStruct;
+
+    /* Enable clock for SYSCFG */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Use PC8 for EXTI_Line8 */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource8);
+
+    /* PC8 is connected to EXTI_Line8 */
+    EXTI_InitStruct.EXTI_Line = EXTI_Line8;
+    /* Enable interrupt */
+    EXTI_InitStruct.EXTI_LineCmd = DISABLE;
+    /* Interrupt mode */
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    /* Triggers on HL High -> Low falling edge
+     * A change of state, i.e. an edge, serves as a start or stop condition.*/
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+    // EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    /* Add to EXTI */
+    EXTI_Init(&EXTI_InitStruct);
+
+    /* Add IRQ vector to NVIC */
+    /* PC8 is connected to EXTI9_5_IRQn
+     * the port lines 5-9 and 10-15 are bundled on the EXTI9-5_IRQn and EXTI15-10_IRQn */
+    NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+    /* Set priority: This parameter can be a value between 0 and 15 */
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
+    /* Set sub priority */
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x00;
+    /* Enable interrupt */
+    NVIC_InitStruct.NVIC_IRQChannelCmd = DISABLE;
+    /* Add to NVIC */
+    NVIC_Init(&NVIC_InitStruct);
+}
+
+int bcd_decimal(uint8_t hex)
+{
+    // More significant nybble is valid
+    if (((hex & 0xF0) >> 4) < 10) {
+        // Less significant nybble is valid
+        if ((hex & 0x0F) < 10);
+        {
+            int dec = ((hex & 0xF0) >> 4) * 10 + (hex & 0x0F);
+            return dec;
+        }
+    }
+    else {
+        return hex;
+    }
+}
+
+void usart2_send_time(RTC_TimeTypeDef time) {
+    usart2_send("Time: ");
+    int hours = bcd_decimal(time.RTC_Hours);
+    sprintf(date_buf, "%i", hours);
+    usart2_send(date_buf);
+    usart2_send(":");
+    int minutes = bcd_decimal(time.RTC_Minutes);
+    sprintf(date_buf, "%i", minutes);
+    usart2_send(date_buf);
+    usart2_send(":");
+    int seconds = bcd_decimal(time.RTC_Seconds);
+    sprintf(date_buf, "%i", seconds);
+    usart2_send(date_buf);
+    usart2_send("\r\n");
+}
+
+void usart2_send_date(RTC_DateTypeDef date) {
+    usart2_send("Day: ");
+    int day = bcd_decimal(date.RTC_Date);
+    sprintf(date_buf, "%i", day);
+    usart2_send(date_buf);
+    usart2_send(".");
+    int month = bcd_decimal(date.RTC_Month);
+    sprintf(date_buf, "%i", month);
+    usart2_send(date_buf);
+    usart2_send(".");
+    int year = bcd_decimal(date.RTC_Year);
+    sprintf(date_buf, "%i", year);
+    usart2_send(date_buf);
+    usart2_send("\r\n");
+}
+
+void get_sys_time() {
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    uint8_t buffer[20];
+
+    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
+    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
+    RTC_GetTime(RTC_Format_BCD, &sTime);
+    RTC_GetDate(RTC_Format_BCD, &sDate);
+
+    // The data is BCD coded so we need to
+    // convert a binary-coded decimal number into a decimal number in terms of representation
+    usart2_send_time(sTime);
+    usart2_send_date(sDate);
+}
+

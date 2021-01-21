@@ -20,6 +20,7 @@
 //#include "stm32f4xx_exti.h"
 //#include "stm32f4xx_flash.h"
 //#include "stm32f4xx_fsmc.h"
+#include <stm32f4xx_rtc.h>
 #include "stm32f4xx_gpio.h"
 //#include "stm32f4xx_hash_md5.h"
 //#include "stm32f4xx_hash_sha1.h"
@@ -128,6 +129,24 @@ void usart2_print();
 
 void USART2_IRQ_LED_CONTROL();
 void toggle_led_ms(int s);
+
+void USART2_IRQ_LED_CONTROL_WITH_OFF();
+void USART2_GET_DATATIME(void);
+
+void init_iwdg();
+
+void init_button_1_irq();
+void init_button_2_irq();
+
+void button_1_handler();
+void button_2_handler();
+
+void deinit_button_1_irq();
+
+void get_sys_time();
+void usart2_send_time(RTC_TimeTypeDef time);
+int bcd_decimal(uint8_t hex);
+void usart2_send_date(RTC_DateTypeDef date);
 
 //=========================================================================
 #endif
