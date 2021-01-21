@@ -40,8 +40,8 @@ int main(void)
         // We set NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
         // and implement everything in IRQ_Handler
 
-        wait_mSek(1000);
-        get_sys_time();
+        //wait_mSek(1000);
+        //get_sys_time();
 
     }
     return 0; // to make the warning stop

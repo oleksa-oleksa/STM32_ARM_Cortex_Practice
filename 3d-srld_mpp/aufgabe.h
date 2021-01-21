@@ -165,5 +165,7 @@ void usart2_send_time(RTC_TimeTypeDef time);
 int bcd_decimal(uint8_t hex);
 void usart2_send_date(RTC_DateTypeDef date);
 
+void parse_date(char * rx_buf);
+
 //=========================================================================
 #endif

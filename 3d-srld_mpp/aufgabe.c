@@ -306,9 +306,8 @@ void USART2_GET_DATATIME(void)
             // Assignment 4, task 2.7
             // case: set Time and Date, LED will be turned off for a silence purpose
             if (usart2_rx_buffer[0] == 'd') {
-                strcpy(usart2_tx_buffer, "Enter date dd:mm:yyyy!\r\n");
-                LED_GR_OFF;
-                led_timer = 0;
+                strcpy(usart2_tx_buffer, "Enter date in format DD.MM:YYYY!\r\n");
+                parse_date(usart2_rx_buffer);
             }
 
             else {
@@ -357,13 +356,6 @@ void USART2_IRQ_LED_CONTROL_WITH_OFF() {
 
             else if (usart2_rx_buffer[0] == 's') {
                 strcpy(usart2_tx_buffer, "grüne LED ist AUS\r\n");
-                LED_GR_OFF;
-                led_timer = 0;
-            }
-
-                // case: set Time and Date, LED will be turned off for a silence purpose
-            else if (usart2_rx_buffer[0] == 'd') {
-                strcpy(usart2_tx_buffer, "Enter date!\r\n");
                 LED_GR_OFF;
                 led_timer = 0;
             }
@@ -581,4 +573,20 @@ void get_sys_time() {
     // convert a binary-coded decimal number into a decimal number in terms of representation
     usart2_send_time(sTime);
     usart2_send_date(sDate);
+}
+
+void parse_date(char * rx_buf) {
+    RTC_DateTypeDef sDate;
+
+    uint8_t date;
+    uint8_t month;
+    uint8_t year;
+
+
+    sscanf(rx_buf, "%2i:%2i:%4i", &date, &month, &year);
+
+    //RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct)
+
+
+
 }
