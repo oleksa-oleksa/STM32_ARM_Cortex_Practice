@@ -439,12 +439,15 @@ void RTC_Alarm_IRQHandler(void)
 			EXTI_ClearITPendingBit(EXTI_Line17);
 			// if condition checks which type of alarm is set
 			if (alarm_type == RTC_MONDAY_ALARM) {
+				usart2_send("\r\nAlarm type: every Monday 00:30\r\n");
 				get_sys_time();
 			}
 			if (alarm_type == RTC_THRIDS_ALARM) {
+				usart2_send("\r\nAlarm type: every 30rd second of a minute\r\n");
 				get_sys_only_time();
 			}
 			if (alarm_type == RTC_EVERY_25_SECS_ALARM) {
+				usart2_send("\r\nAlarm type: every 25 seconds\r\n");
 				get_sys_only_time();
 				LED_GR_TOGGLE;
 				set_RTC_Alarm_each_25_secs(); // reset alarm to be triggered in the next 25 seconds

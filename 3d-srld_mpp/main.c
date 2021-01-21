@@ -17,6 +17,7 @@ int main(void)
 
     /* Start der Real Time Clock */
     start_RTC();
+    start_RTC_Alarm();
 
     // Initialize SysTick
     // The call then takes place every ms of the handler for the SysTick_IRQn interrupt
@@ -24,15 +25,16 @@ int main(void)
 
 
     our_init_board();
-    start_RTC_Alarm();
     // Sheet 7 Exercise 3.3
     // only execute one of the set_RTC_Alarm functions
     //set_RTC_Alarm_Mondays();
-    set_RTC_Alarm_Thirds();
+    //set_RTC_Alarm_Thirds();
+    set_RTC_Alarm_each_25_secs();
 
     while(1){
         // pause 1 sec
         wait_mSek(1000); 
+        get_sys_time();
     }
     return 0; // to make the warning stop
 }

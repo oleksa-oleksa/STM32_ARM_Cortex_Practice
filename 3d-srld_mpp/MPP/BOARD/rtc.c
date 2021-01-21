@@ -544,6 +544,9 @@ void show_RTC_Alarm(void) {
 _Bool Zeit_ueberlauf_Korektur(RTC_AlarmTypeDef* r) {
 	uint8_t MonatsTageAnzahl = 0;
 	_Bool Alarm_is_next_Month = false;
+
+	// was missing in initial code base
+	RTC_GetDate(RTC_Format_BIN, &RTC_Date_Aktuell);
 	if (r->RTC_AlarmTime.RTC_Seconds >= 60) {
 		r->RTC_AlarmTime.RTC_Minutes += r->RTC_AlarmTime.RTC_Seconds / 60;
 		r->RTC_AlarmTime.RTC_Seconds = r->RTC_AlarmTime.RTC_Seconds % 60;
@@ -566,8 +569,15 @@ _Bool Zeit_ueberlauf_Korektur(RTC_AlarmTypeDef* r) {
 		r->RTC_AlarmDateWeekDay = r->RTC_AlarmDateWeekDay - MonatsTageAnzahl;
 		Alarm_is_next_Month = true;
 	}
-	if (RTC_Date_Aktuell.RTC_Date
-			< r->RTC_AlarmDateWeekDay&& Alarm_is_next_Month == true)
+    
+	// somehow when RTC_Date_Aktuell.RTC_Date == r->RTC_AlarmDateWeekDay is equal
+	// RTC_Date_Aktuell.RTC_Date < r->RTC_AlarmDateWeekDay return false 
+	// therefore we added a additional condition
+	if (RTC_Date_Aktuell.RTC_Date == r->RTC_AlarmDateWeekDay) {
+		return true;
+	}
+	if (RTC_Date_Aktuell.RTC_Date < r->RTC_AlarmDateWeekDay&& Alarm_is_next_Month == true)
+		usart2_send_text("Overflow");
 		return false;
 	return true;
 }
@@ -772,7 +782,7 @@ _Bool set_RTC_Alarm_in(uint8_t Tagen, uint8_t Std, uint8_t Min, uint8_t Sek,
 	RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds = RTC_Time_Aktuell.RTC_Seconds
 			+ Sek;
 	RTC_Alarm_Struct.RTC_AlarmDateWeekDay = RTC_Date_Aktuell.RTC_Date + Tagen;
-	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_WeekDay;
+	RTC_Alarm_Struct.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_Date;
 	//=== Alarm Maske setzen ========================================
 	RTC_Alarm_Struct.RTC_AlarmMask = RTC_AlarmMask_None;
 	//=== Überläufe der Sek, Min, Std und Tage korrigieren ==========

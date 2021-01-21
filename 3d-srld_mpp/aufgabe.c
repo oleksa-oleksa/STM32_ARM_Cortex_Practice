@@ -523,23 +523,9 @@ void usart2_send_date(RTC_DateTypeDef date) {
     usart2_send("\r\n");
 }
 
-void get_sys_only_time() {
-    RTC_TimeTypeDef sTime;
-    uint8_t buffer[20];
-
-    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
-    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
-    RTC_GetTime(RTC_Format_BCD, &sTime);
-
-    // The data is BCD coded so we need to
-    // convert a binary-coded decimal number into a decimal number in terms of representation
-    usart2_send_time(sTime);
-}
-
 void get_sys_time() {
     RTC_TimeTypeDef sTime;
     RTC_DateTypeDef sDate;
-    uint8_t buffer[20];
 
     // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
     // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
@@ -550,6 +536,18 @@ void get_sys_time() {
     // convert a binary-coded decimal number into a decimal number in terms of representation
     usart2_send_time(sTime);
     usart2_send_date(sDate);
+}
+
+void get_sys_only_time() {
+    RTC_TimeTypeDef sTime;
+
+    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
+    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
+    RTC_GetTime(RTC_Format_BCD, &sTime);
+
+    // The data is BCD coded so we need to
+    // convert a binary-coded decimal number into a decimal number in terms of representation
+    usart2_send_time(sTime);
 }
 
 
@@ -584,7 +582,6 @@ void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint3
 			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
 	usart2_send_text(alarmOutput);
 
-
     // init RTC alarm A register
     RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
     // disable RTC alarm A interrupt 
@@ -593,11 +590,6 @@ void set_RTC_Alarm(uint8_t weekday, uint8_t Std, uint8_t Min, uint8_t Sek, uint3
     RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
     // reset flag
     RTC_ClearFlag(RTC_FLAG_ALRAF);
-    // activate ALARM A PC13 as Open Drain
-    // in case of the alarm begin polarity low
-    // to activate supply voltage
-    RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
-    RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
 
     // enable alarm interrupt
     RTC_ITConfig(RTC_IT_ALRA, ENABLE);
@@ -637,6 +629,9 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
     alarm_type = RTC_EVERY_25_SECS_ALARM;
     _Bool setzen_moeglich = false;	
 	char alarmOutput[128];
+
+    // disable alarm
+	RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
     
     // get current time and date
 	RTC_GetTime(RTC_Format_BIN, &RTC_Time_Current);
@@ -654,18 +649,17 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
     
     // handles any time/date overflow, meaning e.g. if RTC_Time_Current.RTC_Seconds + 25 > 59 etc.
     // function was already implemented in rtc.c
-	setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
-
-    sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
-			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
-			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
-			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds,
-			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
-	usart2_send_text(alarmOutput);
+    setzen_moeglich = Zeit_ueberlauf_Korektur(&RTC_Alarm_Struct);
 
 	// if time/data overflow could be handled, set alarm
 	if (setzen_moeglich == true)
 	{
+        sprintf(alarmOutput, "RTC Alarm gestellt auf %d:%d:%d Uhr am %d. Tag des Monats\r\n",
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Hours,
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Minutes,
+			RTC_Alarm_Struct.RTC_AlarmTime.RTC_Seconds,
+			RTC_Alarm_Struct.RTC_AlarmDateWeekDay);
+	    usart2_send_text(alarmOutput);
 		// init RTC alarm A register
 		RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_Alarm_Struct);
 		// disable RTC alarm A interrupt
@@ -674,11 +668,6 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
 		RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
 		// reset flag
 		RTC_ClearFlag(RTC_FLAG_ALRAF);
-		// activate ALARM A PC13 as Open Drain
-        // in case of the alarm begin polarity low
-        // to activate supply voltage
-		RTC_OutputConfig(RTC_Output_AlarmA, RTC_OutputPolarity_Low);
-		RTC_OutputTypeConfig(RTC_OutputType_OpenDrain);
 
         // enable alarm interrupt
 		RTC_ITConfig(RTC_IT_ALRA, ENABLE);
