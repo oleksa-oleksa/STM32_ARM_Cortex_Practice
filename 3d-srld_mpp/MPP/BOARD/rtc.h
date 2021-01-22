@@ -13,6 +13,7 @@
 #include "stm32f4xx_rng.h"
 #include "stm32f4xx_rtc.h"
 #include "stm32f4xx_syscfg.h"
+#include "../aufgabe.h"
 
 
 

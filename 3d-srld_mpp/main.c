@@ -35,11 +35,15 @@ int main(void)
     start_RTC();
     start_RTC_Alarm();
 
+    // to make sure that no alarm is set
+    RTC_ClearITPendingBit(RTC_IT_ALRA);
+	EXTI_ClearITPendingBit(EXTI_Line17);
+
     // Sheet 7 Exercise 3
     // only execute one of the set_RTC_Alarm functions
     //set_RTC_Alarm_Mondays();
     //set_RTC_Alarm_Thirds();
-    //set_RTC_Alarm_each_25_secs();
+    set_RTC_Alarm_each_25_secs();
 
     while(1){
 
