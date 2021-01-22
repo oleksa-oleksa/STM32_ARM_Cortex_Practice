@@ -282,6 +282,10 @@ void EXTI9_5_IRQHandler(void)
         // Sleep mode end part
         GR_LED_OFF;
         led_flag = 0;
+
+        // after exiting the stop mode it is necessary to re-initialize
+        // the clock system by calling SystemInit ().
+        SystemInit();
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)
