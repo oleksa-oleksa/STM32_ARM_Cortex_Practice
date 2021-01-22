@@ -823,8 +823,12 @@ void turn_off_led_sleep()
         if (GPIO_ReadInputDataBit ( GPIOC , GPIO_Pin_8 ) == 0) {
             usart2_send("Green LED is ON and board sleeps\r\n");
             led_flag = 0;
+            // turn the led
             GR_LED_ON;
             wait_uSek(300000); // if we not wait here a while one button press of a human will be registered as multiple ones
+
+            // enter sleep mode
+            // don"t forget to create a backdoor before flash
         }
 
     }
