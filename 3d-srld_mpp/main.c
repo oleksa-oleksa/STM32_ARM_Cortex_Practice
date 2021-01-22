@@ -21,10 +21,12 @@ int main(void)
 
     start_RTC();
 
-    turn_off_led_sleep();
+    // assignment 8
+    //sleep_mode_test();
+    stop_mode_test();
 
     while(1){
 
-    }
+        }
     return 0; // to make the warning stop
 }

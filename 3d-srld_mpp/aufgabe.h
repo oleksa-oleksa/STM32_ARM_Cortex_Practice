@@ -179,10 +179,8 @@ void get_sys_only_time();
 void set_RTC_Alarm_Mondays();
 void set_RTC_Alarm_Thirds();
 void set_RTC_Alarm_each_25_secs();
-
-void turn_off_led_sleep();
-void button_2_handler_sleep();
-
+void sleep_mode_test();
+void stop_mode_test();
 
 //=========================================================================
 #endif

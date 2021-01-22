@@ -276,7 +276,12 @@ void EXTI9_5_IRQHandler(void)
         EXTI_ClearITPendingBit(EXTI_Line5);
         usart2_send("EXTI5_IRQn\r\n");
 
-        button_2_handler_sleep();
+        // Any peripheral interrupt acknowledged by the nested vectored interrupt
+        // controller (NVIC) can wake up the device from Sleep mode.
+
+        // Sleep mode end part
+        GR_LED_OFF;
+        led_flag = 0;
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)

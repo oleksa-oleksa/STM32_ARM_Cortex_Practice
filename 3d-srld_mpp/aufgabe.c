@@ -495,12 +495,6 @@ void button_2_handler() {
     usart2_send("Green LED is OFF\r\n");
 }
 
-void button_2_handler_sleep() {
-    GR_LED_OFF;
-    led_flag = 0;
-    usart2_send("Green LED is OFF and board woke up\r\n");
-}
-
 void deinit_button_1_irq() {
     /* Set variables used for IRQ */
     EXTI_InitTypeDef EXTI_InitStruct;
@@ -812,24 +806,76 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
     }
 }
 
-void turn_off_led_sleep()
-{
-    while(1)
-    {
+void sleep_mode_test() {
+    int i;
+
+    while(1) {
+        // at restart blink with interval
         if (led_flag) {
-            wait_uSek(3000000);
             LED_GR_TOGGLE;
-        }
-        if (GPIO_ReadInputDataBit ( GPIOC , GPIO_Pin_8 ) == 0) {
-            usart2_send("Green LED is ON and board sleeps\r\n");
-            led_flag = 0;
-            // turn the led
-            GR_LED_ON;
-            wait_uSek(300000); // if we not wait here a while one button press of a human will be registered as multiple ones
-
-            // enter sleep mode
-            // don"t forget to create a backdoor before flash
+            // wait 0.5 sec to allow human to push a button on every loop
+            wait_uSek(500000);
         }
 
+        for (i = 0; i <= 500000; i++) {
+            // 2.5 sec in 500000 iterations to allow human push a button
+            // we poll the button state every 5 microseconds,
+            // the every click should be detected due the contact bounce
+            wait_uSek(5);
+
+            // poll the button
+            if (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_8) == 0) {
+                // turn the led
+                GR_LED_ON;
+                led_flag = 0;
+                // prevent contact bounce
+                wait_uSek(300000);
+                // The Sleep mode is entered by using the __WFI() or __WFE() functions
+                usart2_send("Led ON, Sleep Mode Start\r\n");
+                /* Request Wait For Interrupt */
+                __WFI();
+                usart2_send("LED OFF, sleep finished\r\n");
+                usart2_send("Continue from stop point\r\n");
+            }
+        }
     }
 }
+
+void stop_mode_test() {
+    int i;
+
+    while(1) {
+        // at restart blink with interval
+        if (led_flag) {
+            LED_GR_TOGGLE;
+            // wait 0.5 sec to allow human to push a button on every loop
+            wait_uSek(500000);
+        }
+
+        for (i = 0; i <= 500000; i++) {
+            // 2.5 sec in 500000 iterations to allow human push a button
+            // we poll the button state every 5 microseconds,
+            // the every click should be detected due the contact bounce
+            wait_uSek(5);
+
+            // poll the button
+            if (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_8) == 0) {
+                // turn the led
+                GR_LED_ON;
+                led_flag = 0;
+                // prevent contact bounce
+                usart2_send("Led ON, Stop Mode Start\r\n");
+                wait_uSek(300000);
+                // The Stop mode is entered using the PWR_EnterSTOPMode
+                // The voltage regulator can be configured either in normal or low-power mode.
+                // STOP mode in entered with WFI instruction
+                PWR_EnterSTOPMode(PWR_Regulator_ON, PWR_STOPEntry_WFI);
+                wait_uSek(300000);
+
+                usart2_send("LED OFF, stop finished\r\n");
+                usart2_send("Continue from stop point\r\n");
+            }
+        }
+    }
+}
+
