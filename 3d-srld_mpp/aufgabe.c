@@ -11,7 +11,7 @@ char date_buf[5];
 int date_flag = 0;
 int time_flag = 0;
 int dt_flag = 0;
-
+int led_flag = 1;
 
 // sudo chmod 0777 /dev/ttyUSB0
 
@@ -237,18 +237,9 @@ void init_iwdg() { // configure to count 5 secs
 void our_init_board(){
     init_POWER_ON();
 
-    //init_usart_2_tx();
     init_usart_2_tx_rx();
 
     usart2_send("\r\nNeustart\r\n");
-    usart2_send("=> UART RX/TX \r\n");
-    usart2_send("_____________\r\n");
-
-    // print into terminal
-    get_sys_time();
-
-    //init_iwdg();
-    //usart2_send_text("=> IWDG \r\n");
 
 }
 
@@ -363,10 +354,6 @@ void USART2_GET_DATATIME(void)
     }
 }
 
-
-
-void toggle_led_ms(int s) {
-}
 
 void USART2_IRQ_LED_CONTROL_WITH_OFF() {
     char c;
@@ -508,6 +495,12 @@ void button_2_handler() {
     usart2_send("Green LED is OFF\r\n");
 }
 
+void button_2_handler_sleep() {
+    GR_LED_OFF;
+    led_flag = 0;
+    usart2_send("Green LED is OFF and board woke up\r\n");
+}
+
 void deinit_button_1_irq() {
     /* Set variables used for IRQ */
     EXTI_InitTypeDef EXTI_InitStruct;
@@ -613,12 +606,6 @@ void get_sys_time() {
     usart2_send_date(sDate);
 }
 
-uint8_t bcd2byte(uint8_t Value)
-{
-    uint8_t tmp = 0;
-    tmp = ((uint8_t)(Value & (uint8_t)0xF0) >> (uint8_t)0x4) * 10;
-    return (tmp + (Value & (uint8_t)0x0F));
-}
 
 uint8_t byte2bcd(uint8_t Value)
 {
@@ -822,5 +809,23 @@ void set_RTC_Alarm_each_25_secs() { // every 25 secs from the first time the fun
         RTC_ITConfig(RTC_IT_ALRA, ENABLE);
         // enable alarm
         RTC_AlarmCmd(RTC_Alarm_A, ENABLE);
+    }
+}
+
+void turn_off_led_sleep()
+{
+    while(1)
+    {
+        if (led_flag) {
+            wait_uSek(3000000);
+            LED_GR_TOGGLE;
+        }
+        if (GPIO_ReadInputDataBit ( GPIOC , GPIO_Pin_8 ) == 0) {
+            usart2_send("Green LED is ON and board sleeps\r\n");
+            led_flag = 0;
+            GR_LED_ON;
+            wait_uSek(300000); // if we not wait here a while one button press of a human will be registered as multiple ones
+        }
+
     }
 }

@@ -275,26 +275,8 @@ void EXTI9_5_IRQHandler(void)
         EXTI_ClearFlag(EXTI_Line5);
         EXTI_ClearITPendingBit(EXTI_Line5);
         usart2_send("EXTI5_IRQn\r\n");
-        //TASTER2_IRQ();
-        /* PC5 CASE: */
-        // The ISR should switch off the green LED on PB2.
-        button_2_handler();
 
-        // counter preparations
-        if (!button_1_enabled) {
-            counter_button_2++;
-            sprintf(counter_buf, "%i", counter_button_2);
-            usart2_send("Button 1 disabled, button 2 is pressed times: ");
-            usart2_send(counter_buf);
-            usart2_send("\r\n");
-        }
-
-        if (counter_button_2 == 2) {
-            usart2_send("Interrupt enabled!\r\n");
-            init_button_1_irq();
-            button_1_enabled = 1;
-            counter_button_2 = 0;
-        }
+        button_2_handler_sleep();
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)
@@ -313,6 +295,7 @@ void EXTI9_5_IRQHandler(void)
 
     // Assignment 6: Interrupts
     /* Make sure that interrupt flag is set */
+    // Button 1
     /* PC8 is connected to EXTI_Line8 */
     if (EXTI_GetITStatus(EXTI_Line8) == SET)
     {

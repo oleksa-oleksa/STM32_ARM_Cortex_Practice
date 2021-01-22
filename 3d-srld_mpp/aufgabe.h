@@ -113,6 +113,7 @@
 //extern char counter_char;
 extern int led_timer;
 extern int alarm_type;
+extern int led_flag;
 
 
 
@@ -178,6 +179,9 @@ void get_sys_only_time();
 void set_RTC_Alarm_Mondays();
 void set_RTC_Alarm_Thirds();
 void set_RTC_Alarm_each_25_secs();
+
+void turn_off_led_sleep();
+void button_2_handler_sleep();
 
 
 //=========================================================================
