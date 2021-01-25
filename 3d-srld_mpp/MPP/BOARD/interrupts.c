@@ -101,7 +101,7 @@ void SysTick_Handler(void)
     static  unsigned  long  SysTickCounter = 0;
     SysTickCounter++;
     if (SysTickCounter  == led_timer) {
-        GR_LED_TOGGLE;
+        //GR_LED_TOGGLE;
         //usart2_send("LED toggled\r\n");
     }
     // overflow
@@ -424,9 +424,25 @@ void RTC_Alarm_IRQHandler(void)
 	if(RTC_GetITStatus(RTC_IT_ALRA) != RESET)
 		{
 			usart2_send("\r\nALARM ALRA\r\n");
-			LED_GR_TOGGLE;
+			//LED_GR_TOGGLE;
 			RTC_ClearITPendingBit(RTC_IT_ALRA);
 			EXTI_ClearITPendingBit(EXTI_Line17);
+			// if condition checks which type of alarm is set
+			if (alarm_type == RTC_MONDAY_ALARM) {
+				usart2_send("\r\nAlarm type: every Monday 00:30\r\n");
+				get_sys_time();
+			}
+			if (alarm_type == RTC_THRIDS_ALARM) {
+				usart2_send("\r\nAlarm type: every 30rd second of a minute\r\n");
+				get_sys_only_time();
+			}
+			if (alarm_type == RTC_EVERY_25_SECS_ALARM) {
+				usart2_send("\r\nAlarm type: every 25 seconds\r\n");
+				get_sys_only_time();
+				GR_LED_TOGGLE;
+				set_RTC_Alarm_each_25_secs(); // reset alarm to be triggered in the next 25 seconds
+			}
+
 			//	if (RTC_Alarm_CallBack[0] != NULL)
 			//	{
 			//	RTC_Alarm_CallBack[0]();

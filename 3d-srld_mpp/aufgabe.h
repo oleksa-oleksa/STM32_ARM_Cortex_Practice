@@ -148,6 +148,7 @@ void button_2_handler();
 
 void deinit_button_1_irq();
 
+void get_sys_only_time();
 void get_sys_time();
 void usart2_send_time(RTC_TimeTypeDef time);
 int bcd_decimal(uint8_t hex);

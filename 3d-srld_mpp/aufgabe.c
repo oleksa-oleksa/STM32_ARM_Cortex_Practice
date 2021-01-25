@@ -12,6 +12,8 @@ int date_flag = 0;
 int time_flag = 0;
 int dt_flag = 0;
 int led_flag = 1;
+int alarm_type = 0;
+
 
 // sudo chmod 0777 /dev/ttyUSB0
 
@@ -238,7 +240,7 @@ void our_init_board(){
     init_POWER_ON();
 
     init_usart_2_tx_rx();
-
+    
     usart2_send("\r\nNeustart\r\n");
 
 }
@@ -326,7 +328,7 @@ void USART2_GET_DATATIME(void)
             // Assignment 7, task 2.2
             // case: set Time and Date, LED will be turned off for a silence purpose
             if (usart2_rx_buffer[0] == 'd') {
-                strcpy(usart2_tx_buffer, "Enter date in format DD/MM/YYYY!\r\n");
+                strcpy(usart2_tx_buffer, "Enter date in format DD/MM/YY!\r\n");
                 date_flag = 1;
                 dt_flag = 1;
             }
@@ -585,6 +587,18 @@ void usart2_send_date(RTC_DateTypeDef date) {
 
 }
 
+void get_sys_only_time() {
+    RTC_TimeTypeDef sTime;
+
+    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
+    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
+    RTC_GetTime(RTC_Format_BCD, &sTime);
+
+    // The data is BCD coded so we need to
+    // convert a binary-coded decimal number into a decimal number in terms of representation
+    usart2_send_time(sTime);
+}
+
 void get_sys_time() {
     RTC_TimeTypeDef sTime;
     RTC_DateTypeDef sDate;
@@ -667,18 +681,6 @@ void parse_time(char * rx_buf) {
     // RTC_SetDate(RTC_Format_BCD, &sDate);
     RTC_SetTime(RTC_Format_BCD, &sTime);
 
-}
-
-void get_sys_only_time() {
-    RTC_TimeTypeDef sTime;
-
-    // FORMAT is RTC_Format_BIN) || RTC_Format_BCD
-    // With these functions we copy data from TRC registers to our two variables (sTime and sDate).
-    RTC_GetTime(RTC_Format_BCD, &sTime);
-
-    // The data is BCD coded so we need to
-    // convert a binary-coded decimal number into a decimal number in terms of representation
-    usart2_send_time(sTime);
 }
 
 
