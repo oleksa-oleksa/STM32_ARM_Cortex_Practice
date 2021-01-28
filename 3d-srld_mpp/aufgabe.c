@@ -2,7 +2,7 @@
 #include "main.h"
 GPIO_InitTypeDef GPIO_InitStructure;
 
-/* Init the GPIO as Output Push Pull with Pull-up
+/* Init the GPIO as Output
  * on selected Port with selected Pin
  * set output pin to zero (initial state is off)
  */
@@ -57,7 +57,6 @@ void led_on_off()
     uint8_t count_button_2 = 0;
     while(1)
 	{
-        uwbranging_tick();
         if (GPIO_ReadInputDataBit ( GPIOB, GPIO_Pin_2) == 1) { // check only for button 1 if led is on
             if (GPIO_ReadInputDataBit ( GPIOC , GPIO_Pin_8 ) != 1) {
                 GR_LED_OFF;

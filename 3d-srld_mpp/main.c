@@ -27,6 +27,17 @@ int main(void)
     */
     start_RTC();
 
+    // Assignment 2, task 3
     led_on_off();
+
+    /* Assignment 2, task 2
+    while(1) {
+        GR_LED_ON;
+        wait_uSek(1000000);
+        GR_LED_OFF;
+        wait_uSek(1000000);
+     }
+     */
+
     return 0; // to make the warning stop
 	}
