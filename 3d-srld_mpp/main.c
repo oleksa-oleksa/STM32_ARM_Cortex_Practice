@@ -10,22 +10,23 @@ char counter_char;
 int main(void)
 {
     SystemInit();
-    //InitSysTick();
+    InitSysTick();
+    start_RTC();
+    enable_RTC_Wakup();
 
     // Assignment 8: Sleep Mode
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
     init_button_1();
-    init_button_2_irq();
+    init_button_2();
 
     our_init_board();
-
-    start_RTC();
-
     // assignment 8
     //sleep_mode_test();
-    stop_mode_test();
+    //stop_mode_test();
+    standby_mode_test();
 
     while(1){
+        
 
         }
     return 0; // to make the warning stop

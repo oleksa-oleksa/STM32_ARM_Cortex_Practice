@@ -61,13 +61,13 @@ After that, use the gdb:
 ```
 2. connect to board
 ```bash
-(gdb) target extended localhost:3333
+(gdb) target remote localhost:3333
 ```
 3. optional: set breakpoints like so
 ```bash
 (gdb) break filename.c:line
 ```
-4. (I had to do it) load and start programm:
+4. (I had to do it) load and start programm:	
 ```bash
 (gdb) load
 ...

@@ -240,6 +240,8 @@ void our_init_board(){
     init_POWER_ON();
 
     init_usart_2_tx_rx();
+    init_button_1();
+    init_button_2();
     
     usart2_send("\r\nNeustart\r\n");
 
@@ -881,3 +883,60 @@ void stop_mode_test() {
     }
 }
 
+EXTI_InitTypeDef EXTI_InitStruct;
+NVIC_InitTypeDef NVIC_InitStruct;
+void enable_RTC_Wakup(void) {
+
+	EXTI_ClearITPendingBit(EXTI_Line22);
+	EXTI_InitStruct.EXTI_Line = EXTI_Line22;
+	EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStruct);
+
+	NVIC_InitStruct.NVIC_IRQChannel = RTC_WKUP_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStruct);
+
+	RTC_WakeUpCmd(DISABLE);
+
+    RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div16);
+    RTC_SetWakeUpCounter(61440);
+    
+    // Clear PWR Wakeup WUF Flag
+	PWR_ClearFlag(PWR_CSR_WUF);
+	PWR_WakeUpPinCmd(ENABLE);
+
+    // Clear RTC Wakeup WUTF Flag
+	RTC_ClearITPendingBit(RTC_IT_WUT);
+	RTC_ClearFlag(RTC_FLAG_WUTF);
+
+	RTC_ITConfig(RTC_IT_WUT, ENABLE);	// Bit 14
+	RTC_AlarmCmd(RTC_CR_WUTE, ENABLE); 	// Bit 10
+
+	RTC_WakeUpCmd(ENABLE);
+}
+
+void standby_mode_test() {
+    usart2_send("STANDBY MODE TEST\r\n");
+    RTC_WakeUpCmd(DISABLE);
+    while(1) {
+        wait_mSek(1000);
+        LED_GR_TOGGLE;
+        if (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_8) == 0) {
+            LED_GR_ON;
+            usart2_send("Enable Wakeup\r\n");
+            RTC_WakeUpCmd(ENABLE);
+
+            usart2_send("StandBy Mode Start\r\n");
+            SysTick->CTRL  &= ~SysTick_CTRL_TICKINT_Msk;
+            wait_uSek_CC3100(2000000);
+
+            PWR_EnterSTANDBYMode();
+
+            while(1){;}
+        }
+    }
+}

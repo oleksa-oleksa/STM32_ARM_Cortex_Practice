@@ -5,7 +5,7 @@
 //########## cmsis_lib include
 //#########################################################################
 //#include "stm32f4xx.h"
-//#include "misc.h"
+#include "misc.h"
 //#include "stm32f4xx_adc.h"
 //#include "stm32f4xx_can.h"
 //#include "stm32f4xx_crc.h"
@@ -17,7 +17,7 @@
 //#include "stm32f4xx_dbgmcu.h"
 //#include "stm32f4xx_dcmi.h"
 //#include "stm32f4xx_dma.h"
-//#include "stm32f4xx_exti.h"
+#include "stm32f4xx_exti.h"
 //#include "stm32f4xx_flash.h"
 //#include "stm32f4xx_fsmc.h"
 #include <stm32f4xx_rtc.h>
@@ -27,7 +27,7 @@
 //#include "stm32f4xx_hash.h"
 //#include "stm32f4xx_i2c.h"
 //#include "stm32f4xx_iwdg.h"
-//#include "stm32f4xx_pwr.h"
+#include "stm32f4xx_pwr.h"
 #include "stm32f4xx_rcc.h"
 //#include "stm32f4xx_rng.h"
 #include "stm32f4xx_rtc.h"
@@ -60,7 +60,7 @@
 //#include "simplelink.h"
 //#include "netapp.h"
 //#include "CC3100.h"
-//#include "CC3100_Board.h"
+#include "CC3100_Board.h"
 //=========================================================================
 //#include "dw1000_driver.h"
 //#include "dw1000_ranging.h"
@@ -138,7 +138,6 @@ void USART2_IRQ_LED_CONTROL();
 void USART2_IRQ_LED_CONTROL_WITH_OFF();
 void USART2_IRQHandler(void);
 void USART2_IRQ_SET_DATATIME();
-void init_iwdg();
 
 void init_button_1_irq();
 void init_button_2_irq();
@@ -182,6 +181,9 @@ void set_RTC_Alarm_Thirds();
 void set_RTC_Alarm_each_25_secs();
 void sleep_mode_test();
 void stop_mode_test();
+void standby_mode_test();
+
+void enable_RTC_Wakup();
 
 //=========================================================================
 #endif
