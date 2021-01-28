@@ -873,7 +873,7 @@ void stop_mode_test() {
                 // The Stop mode is entered using the PWR_EnterSTOPMode
                 // The voltage regulator can be configured either in normal or low-power mode.
                 // STOP mode in entered with WFI instruction
-                PWR_EnterSTOPMode(PWR_Regulator_ON, PWR_STOPEntry_WFI);
+                PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
                 wait_uSek(300000);
 
                 usart2_send("LED OFF, stop finished\r\n");
