@@ -548,10 +548,13 @@ void TIM5_IRQHandler(void)
 
 
 //=========================================================================
+char buffer[60];
 void TIM7_IRQHandler(void)
 {
-	BEEPER_IRQHandler();
-    //usart2_send("TIM7_IRQn\r\n");
+	TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
+	timer_interrupt_count += 1;
+	sprintf(buffer, "%d\r\n", timer_interrupt_count);
+	usart2_send(buffer);
 }
 
 //=========================================================================

@@ -114,6 +114,7 @@
 extern int led_timer;
 extern int alarm_type;
 extern int led_flag;
+extern int timer_interrupt_count;
 
 
 
@@ -182,6 +183,9 @@ void set_RTC_Alarm_each_25_secs();
 void sleep_mode_test();
 void stop_mode_test();
 void standby_mode_test();
+
+// Assignment 9
+void init_timer_7();
 
 void enable_RTC_Wakup();
 
