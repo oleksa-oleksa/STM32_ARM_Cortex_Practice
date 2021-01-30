@@ -259,6 +259,7 @@ void EXTI4_IRQHandler(void)
 
 
 //=========================================================================
+char timer_buffer[60]; 
 void EXTI9_5_IRQHandler(void)
 {
     //========================
@@ -274,18 +275,15 @@ void EXTI9_5_IRQHandler(void)
     {
         EXTI_ClearFlag(EXTI_Line5);
         EXTI_ClearITPendingBit(EXTI_Line5);
-        usart2_send("EXTI5_IRQn\r\n");
-
-        // Any peripheral interrupt acknowledged by the nested vectored interrupt
-        // controller (NVIC) can wake up the device from Sleep mode.
-
-        // Sleep mode end part
-        GR_LED_OFF;
-        led_flag = 0;
-
-        // after exiting the stop mode it is necessary to re-initialize
-        // the clock system by calling SystemInit ().
-        SystemInit();
+        //usart2_send("EXTI5_IRQn\r\n");
+		if (timer_runs) {
+			timer_runs = 0;
+			usart2_send("Timer stopped\r\n");
+			start_stop_timer(TIM7, DISABLE);
+			sprintf(timer_buffer, "%.2f seconds\r\n", (float)timer_interrupt_count/1000);
+			usart2_send(timer_buffer);
+		}
+        
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)
@@ -304,33 +302,18 @@ void EXTI9_5_IRQHandler(void)
 
     // Assignment 6: Interrupts
     /* Make sure that interrupt flag is set */
-    // Button 1
+    //===== Button 1
     /* PC8 is connected to EXTI_Line8 */
     if (EXTI_GetITStatus(EXTI_Line8) == SET)
     {
         EXTI_ClearFlag(EXTI_Line8);
         EXTI_ClearITPendingBit(EXTI_Line8);
-        usart2_send("Button 1 pressed EXTI8_IRQn\r\n");
-        //TASTER1_IRQ();
-        /* PC8 CASE: */
-        // The ISR should switch on the green LED on PB2.
-        button_1_handler();
-
-        // counter preparations
-        button_1_enabled = 1;
-        counter_button_1++;
-        sprintf(counter_buf, "%i", counter_button_1);
-        usart2_send(counter_buf);
-        usart2_send("\r\n");
-
-        if (counter_button_1 == 10) {
-            usart2_send("Interrupt disabled!\r\n");
-            deinit_button_1_irq();
-            button_1_enabled = 0;
-            // restore interrupt
-            init_button_2_irq();
-            counter_button_1 = 0;
-        }
+		if (used_timer == USE_TIM7) {
+			timer_runs = 1;
+			usart2_send("Timer starts\r\n");
+			timer_interrupt_count = 0;
+			start_stop_timer(TIM7, ENABLE);
+		}                
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line9) == SET)
@@ -551,10 +534,19 @@ void TIM5_IRQHandler(void)
 char buffer[60];
 void TIM7_IRQHandler(void)
 {
+	/* Assignment 9 2.1 */
+	/*
 	TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 	timer_interrupt_count += 1;
 	sprintf(buffer, "%d\r\n", timer_interrupt_count);
 	usart2_send(buffer);
+	*/
+
+	/* Assignment 9 2.2 */
+	// do not print until timer is stopped
+	// changed timer to triggere interrupt each ms instead of s
+	TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
+	timer_interrupt_count += 1; 
 }
 
 //=========================================================================

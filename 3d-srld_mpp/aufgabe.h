@@ -105,6 +105,11 @@
 #define RTC_THRIDS_ALARM 2
 #define RTC_EVERY_25_SECS_ALARM 3
 
+#define USE_TIM5 5
+#define USE_TIM6 6
+#define USE_TIM7 7
+
+
 
 //=========================================================================
 // Variablen
@@ -115,6 +120,8 @@ extern int led_timer;
 extern int alarm_type;
 extern int led_flag;
 extern int timer_interrupt_count;
+extern int used_timer;
+extern int timer_runs;
 
 
 
@@ -183,11 +190,15 @@ void set_RTC_Alarm_each_25_secs();
 void sleep_mode_test();
 void stop_mode_test();
 void standby_mode_test();
+void enable_RTC_Wakup();
 
 // Assignment 9
 void init_timer_7();
+void init_timer_6();
+void init_timer_5();
+void tester();
+void start_stop_timer(TIM_TypeDef* TIMx, FunctionalState NewState);
 
-void enable_RTC_Wakup();
 
 //=========================================================================
 #endif
