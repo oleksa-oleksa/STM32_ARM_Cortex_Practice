@@ -529,6 +529,16 @@ void TIM5_IRQHandler(void)
     //usart2_send("TIM5_IRQn\r\n");
 }
 
+// Assignment 9
+void TIM3_IRQHandler(void)
+{
+    if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET) {
+        	TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+			EXTI_ClearFlag(EXTI_Line8);
+        	EXTI_ClearITPendingBit(EXTI_Line8);
+			usart2_send("TIM3 IRQ was triggered: button 1 was pressed 10 times\r\n");
+    }
+}
 
 //=========================================================================
 char buffer[60];

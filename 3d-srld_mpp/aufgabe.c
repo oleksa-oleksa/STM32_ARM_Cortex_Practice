@@ -240,8 +240,8 @@ void our_init_board(){
     init_POWER_ON();
 
     init_usart_2_tx_rx();
-    init_button_1();
-    init_button_2();
+    //init_button_1();
+    //init_button_2();
     
     usart2_send("\r\nNeustart\r\n");
 
@@ -1076,4 +1076,64 @@ void init_timer_5() {
     TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
 
     TIM_Cmd(TIM5, ENABLE);
+}
+
+void tim3_monitor_button_1_usage() {
+
+    TIM_Cmd(TIM3, DISABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+ 
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_StructInit(&GPIO_InitStructure);
+
+    // configure port line 8
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+    
+    // enable alternative function
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_TIM3);
+
+    
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+    
+    TIM3 -> CCMR1 |= TIM_CCMR1_CC1S_0 ;
+    TIM3 -> CR2 |= TIM_CR2_TI1S ;
+    
+    // polarity
+    TIM3 -> CCER |= TIM_CCER_CC1P ;
+     
+    TIM3 -> SMCR |= TIM_SMCR_SMS + TIM_SMCR_TS_2 + TIM_SMCR_ETF_0;
+    
+
+    // configure interrupt controller
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+ 
+    // configure TIM3
+    TIM_TimeBaseStructure.TIM_Prescaler = 1;
+    TIM_TimeBaseStructure.TIM_Period = 10 - 1; // interrupt gets triggered after 10 button 1 usages
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    
+    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+
+    TIM_SetCounter (TIM3, 0);
+
+    // clear flag
+    TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+    // enable interrupt
+    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+    
+    // enable timer 3
+    TIM_Cmd(TIM3, ENABLE);
 }

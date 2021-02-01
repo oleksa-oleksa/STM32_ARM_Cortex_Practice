@@ -196,8 +196,8 @@ void enable_RTC_Wakup();
 void init_timer_7();
 void init_timer_6();
 void init_timer_5();
-void tester();
 void start_stop_timer(TIM_TypeDef* TIMx, FunctionalState NewState);
+void tim3_monitor_button_1_usage();
 
 
 //=========================================================================
