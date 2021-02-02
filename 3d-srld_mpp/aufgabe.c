@@ -1137,3 +1137,47 @@ void tim3_monitor_button_1_usage() {
     // enable timer 3
     TIM_Cmd(TIM3, ENABLE);
 }
+
+uint32_t rand_num;
+int rand_latency;
+char rand_buffer[60];
+float durations[10];
+void reflex_test(int round) {
+    if (round < 10) {
+        rand_num = Zufallszahl();
+        rand_latency = 2000000+((int)(((float)rand_num)/100))%8000001; // between 2 and 10 sec in usec
+        wait_uSek(rand_latency);
+        LED_GR_ON;
+        reflex_round_active = 1;
+        start_stop_timer(TIM7, ENABLE);
+    } else {
+        reflex_test_runs = 0;
+        usart2_send("Reflex test is done :)\r\n");
+        int j;
+        float min = durations[0];
+        float max = durations[0];
+        float average = 0;
+        for (j=0; j<10; j++) {
+            average += durations[j];
+            if (durations[j] < min) {
+                min = durations[j];
+            }
+            if (max < durations[j]) {
+                max = durations[j];
+            }
+        }
+        average /= 10;
+        sprintf(rand_buffer, "Min: %f seconds\r\nMax: %f seconds\r\nAverage: %f seconds\r\n", min, max, average);
+		usart2_send(rand_buffer);
+    }
+}
+
+void handle_reflex_input() {
+    start_stop_timer(TIM7, DISABLE);
+    LED_GR_OFF;
+    reflex_round_active = 0;
+    durations[reflex_test_round] = (float)timer_interrupt_count/1000; // save duration in seconds (instead of msec)
+    timer_interrupt_count = 0;
+    reflex_test_round++;
+    reflex_test(reflex_test_round);
+}

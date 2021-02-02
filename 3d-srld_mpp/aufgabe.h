@@ -122,6 +122,9 @@ extern int led_flag;
 extern int timer_interrupt_count;
 extern int used_timer;
 extern int timer_runs;
+extern int reflex_test_round;
+extern int reflex_test_runs;
+extern int reflex_round_active;
 
 
 
@@ -198,6 +201,8 @@ void init_timer_6();
 void init_timer_5();
 void start_stop_timer(TIM_TypeDef* TIMx, FunctionalState NewState);
 void tim3_monitor_button_1_usage();
+void reflex_test();
+void handle_reflex_input();
 
 
 //=========================================================================

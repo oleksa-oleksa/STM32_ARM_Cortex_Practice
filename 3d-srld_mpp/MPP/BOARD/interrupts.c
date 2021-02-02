@@ -276,14 +276,18 @@ void EXTI9_5_IRQHandler(void)
         EXTI_ClearFlag(EXTI_Line5);
         EXTI_ClearITPendingBit(EXTI_Line5);
         //usart2_send("EXTI5_IRQn\r\n");
-		if (timer_runs) {
+		// Assignment 9 task 2.2
+		/*if (timer_runs) {
 			timer_runs = 0;
 			usart2_send("Timer stopped\r\n");
 			start_stop_timer(TIM7, DISABLE);
 			sprintf(timer_buffer, "%.2f seconds\r\n", (float)timer_interrupt_count/1000);
 			usart2_send(timer_buffer);
+		}*/
+        // Assignment 9 task 2.4
+		if (reflex_test_runs & reflex_round_active) { // only handle button usage if test round is active
+			handle_reflex_input();
 		}
-        
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line6) == SET)
@@ -308,12 +312,17 @@ void EXTI9_5_IRQHandler(void)
     {
         EXTI_ClearFlag(EXTI_Line8);
         EXTI_ClearITPendingBit(EXTI_Line8);
-		if (used_timer == USE_TIM7) {
+		// Assignment 9 task 2.2
+		/*if (used_timer == USE_TIM7) {
 			timer_runs = 1;
 			usart2_send("Timer starts\r\n");
 			timer_interrupt_count = 0;
 			start_stop_timer(TIM7, ENABLE);
-		}                
+		}*/
+		// Assignment 9 task 2.4
+		if (reflex_test_runs & reflex_round_active) { // only handle button usage if test round is active
+			handle_reflex_input();
+		}
     }
 	//===== nicht belegt
 	if (EXTI_GetITStatus(EXTI_Line9) == SET)
@@ -460,6 +469,7 @@ void ADC_IRQHandler(void){
 
 //Interrupt handler declaration
 //=========================================================================
+char input = ' ';
 void USART2_IRQHandler(void)
 {
     //===== USART2
@@ -475,7 +485,16 @@ void USART2_IRQHandler(void)
     // USART2_IRQ_LED_CONTROL_WITH_OFF();
 
     // Assignment 7: Set Date and Time via UART
-    USART2_GET_DATATIME();
+    //USART2_GET_DATATIME();
+
+	// Assignment 9: start reflex test
+	input = (char)USART_ReceiveData(USART2);
+	if (!reflex_test_runs && input == 's') {
+		usart2_send("Start reflex test\r\n");
+		reflex_test_runs = 1;
+		reflex_test_round = 0;
+		reflex_test(reflex_test_round);
+	}
 }
 //=========================================================================
 void UART5_IRQHandler(void)
