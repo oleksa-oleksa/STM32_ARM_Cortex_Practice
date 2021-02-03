@@ -949,7 +949,8 @@ void start_stop_timer(TIM_TypeDef* TIMx, FunctionalState NewState) {
 
 void init_timer_7() {
     used_timer = USE_TIM7;
-    // Konfiguration der Interruptcontrollers
+    
+    // configure interrupt controller
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -957,19 +958,17 @@ void init_timer_7() {
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
     
-    // Taktsystem für TIM7 Freigeben
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
     
-    // Struktur anlegen
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     
-    // TIM7 in der Struktur konfigurieren
+    // configure timer 7
     TIM_TimeBaseStructure.TIM_Prescaler = 8400 - 1; // 100µs = 8400 * 1/84000000Hz 
     TIM_TimeBaseStructure.TIM_Period = 10 - 1;   // 1ms = 10 * 100µs
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    
-    // TIM7 Register aus der Struktur Schreiben
+
+
     TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStructure);
 
     TIM_SetCounter(TIM7, 0);
@@ -985,30 +984,25 @@ void init_timer_7() {
 
 void init_timer_6() {
     used_timer = USE_TIM6;
-    // Konfiguration der Interruptcontrollers
-    
-    // Taktsystem für TIM7 Freigeben
+
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
- 
-    // Strukt anlegen
+
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    
-    // TIM7 im Strukt konfigurieren
+
     TIM_TimeBaseStructure.TIM_Prescaler = 84 - 1; 
     TIM_TimeBaseStructure.TIM_Period = 1000 - 1; 
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     
-    // TIM6 Register aus dem Strukt Schreiben
     TIM_TimeBaseInit(TIM6, &TIM_TimeBaseStructure);
     TIM_SetCounter(TIM6, 0);
 
     //TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
     
-    // TIM7 Interrupt erlauben
+    // enable interrupt
     TIM_ITConfig(TIM6, TIM_IT_Update, ENABLE);
     
-    // TIM 7 Freigeben (Takt auf Counter schalten)
+    // enable timer
     TIM_Cmd(TIM6, ENABLE);
  
 }
@@ -1016,52 +1010,48 @@ void init_timer_6() {
 
 void init_timer_5() {
     used_timer = USE_TIM5;
-    // Taktsystem für die Port A Freigeben
+
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    // Struktur anlegen
+
     GPIO_InitTypeDef GPIO_InitStructure;
-    // Struktur Initialisieren
+
     GPIO_StructInit(&GPIO_InitStructure);
-    // Portleitung in der Struktur Konfigurieren
+
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-    // Werte aus der Struktur in die Register schreiben
+
     GPIO_Init(GPIOA, &GPIO_InitStructure);
     
-    
-    // Taktsystem für TIM5 Freigeben
+
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
-    // Alternativfunktion der Portleitung Freigeben
+
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM5);
-    //Struktur anlegen
+
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    // Timer in der Struktur konfigurieren
+
     TIM_TimeBaseStructure.TIM_Prescaler = 8400 - 1;
     TIM_TimeBaseStructure.TIM_Period = 10000 -1;
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    // TIM5 Register aus dem Strukt Schreiben
+
     TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
-    // dadurch zählt der Counter in 0,00001sek Schritten hoch
-    
-    
-    // TIM5CH2 Erkennen steigender Flanke an TI2
+
     TIM5->CCMR1 |= TIM_CCMR1_CC2S_0;
-    // Input Filter setzen
+
     TIM5->CCMR1 |= TIM_CCMR1_IC2F_2 + TIM_CCMR1_IC2F_1 + TIM_CCMR1_IC2F_0;
-    // Trigger auf Steigende Flanke setzen
+
     TIM5->CCER   |= TIM_CCER_CC2P;
-    // Prescaler auf Null setzen
+
     TIM5->CCMR1   &= ~(TIM_CCMR1_IC2PSC_1 + TIM_CCMR1_IC2PSC_0);
-    // Capture freigeben
+
     TIM5->CCER   |= TIM_CCER_CC2E;
-    // Enable Interrupt
+
     TIM5->DIER   |= TIM_DIER_CC2IE;
     
     
-    // Konfiguration der Interruptcontrollers
+    // configure interrupt controller
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -1071,10 +1061,13 @@ void init_timer_5() {
 
     TIM_SetCounter(TIM5, 0);
 
+    // clear interrupt flag
     TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
     
+    // enable interrupt
     TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
 
+    // enable timer
     TIM_Cmd(TIM5, ENABLE);
 }
 
