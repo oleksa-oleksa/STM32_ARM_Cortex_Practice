@@ -204,6 +204,11 @@ void tim3_monitor_button_1_usage();
 void reflex_test();
 void handle_reflex_input();
 
+// Assignment 10 DMA
+void DMA1_Stream5_IRQHandler(void);
+void DMA1_Stream6_IRQHandler(void);
+void init_DMA1_Stream6_IRQ();
+
 
 //=========================================================================
 #endif
