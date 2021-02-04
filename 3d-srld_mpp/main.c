@@ -25,23 +25,11 @@ int main(void)
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
     init_button_1_irq();
     init_button_2_irq();
+    CC3100_init();
 
     our_init_board();
-    
-    // assignment 9 task 2.2
-    init_timer_7();
-    // assignment 9 task 2.3
-    //tim3_monitor_button_1_usage();
+    list_access_points();
 
-
-    while(1){
-        // assignment 9 task 2.3
-        /*
-        tim3_counter = TIM_GetCounter(TIM3);
-		sprintf(buffer, "Button 1 was pressed %u times\r\n", tim3_counter);    
-        usart2_send(buffer);
-        wait_mSek(2000);
-        */
-    }
-    return 0; // to make the warning stop
+    while(1){;}
+    return; // to make the warning stop
 }

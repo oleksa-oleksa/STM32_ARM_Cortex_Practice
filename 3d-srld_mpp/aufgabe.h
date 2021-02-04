@@ -57,9 +57,9 @@
 //#include "taster.h"
 //#include "usart.h"
 //=========================================================================
-//#include "simplelink.h"
+#include "simplelink.h"
 //#include "netapp.h"
-//#include "CC3100.h"
+#include "CC3100.h"
 #include "CC3100_Board.h"
 //=========================================================================
 //#include "dw1000_driver.h"
@@ -204,6 +204,8 @@ void tim3_monitor_button_1_usage();
 void reflex_test();
 void handle_reflex_input();
 
+// Assignment 10
+void list_access_points();
 
 //=========================================================================
 #endif

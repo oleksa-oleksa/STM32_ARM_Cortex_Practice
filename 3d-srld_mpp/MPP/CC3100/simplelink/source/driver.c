@@ -1075,7 +1075,7 @@ _SlReturnVal_t _SlDrvMsgRead(void)
             }
             else
             {
-                /* In case the user supplied Rx buffer length which is smaller then the received data length, copy according to user length */
+                /* In case the user supplied Rx buffer length which is smaller then the  data length, copy according to user length */
                 if (ActDataSize > g_pCB->FunctionParams.pCmdExt->RxPayloadLen)
                 {
                     LengthToCopy = g_pCB->FunctionParams.pCmdExt->RxPayloadLen & (3);

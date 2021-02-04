@@ -1174,3 +1174,64 @@ void handle_reflex_input() {
     reflex_test_round++;
     reflex_test(reflex_test_round);
 }
+
+/* assignment 10 task 4.2 */
+// based on sample code from http://hwp.mi.fu-berlin.de/intern/STM32/09020100.php
+int i = 0;                              // index
+char ap_buffer[100]={0};                // print buffer
+int valid = 0;                          // numer of received wifi aps
+Sl_WlanNetworkEntry_t netEntries[20];   // received wifi aps
+char *decryption_type;                    // decryption type 
+int RetVal = -1;                        // error code
+_u32 interval = 1;                      // scan duration in seconds
+
+void list_access_points() {
+ 
+    // start wifi tranceiver
+    RetVal = sl_Start(NULL, NULL, NULL);
+    if (RetVal == -1) {
+        usart2_print("Error while starting wifi tranceiver!");
+        return;
+    }
+ 
+    // enable wifi scan
+    RetVal = sl_WlanPolicySet(SL_POLICY_SCAN , 1, (_u8 *)&interval, sizeof(interval));
+    if (RetVal == -1) {
+        usart2_print("Error while enabling wifi scan!");
+        return;
+    }
+ 
+    // obtaining list of wifi aps
+    // retry in case of finding less then 5 
+    while (valid < 5)
+    {
+        valid = sl_WlanGetNetworkList(0, 20, &netEntries[0]);
+        if (valid == -1) {
+        usart2_print("Error while scanning for access points!");
+        }   
+        wait_mSek(500);
+    }
+
+    sprintf(ap_buffer, "%d valid access points found!\r\n", valid);
+    usart2_print(ap_buffer);
+     
+    // stop wifi tranceiver
+    sl_Stop(100);
+     
+    // print list of available wifi aps
+    for (i=0; i< valid && i<20; i++)
+    {
+        // get decryption type (string) based on set sec_type value
+        switch(netEntries[i].sec_type) {
+            case SL_SEC_TYPE_OPEN: decryption_type = "Open"; break;
+            case SL_SEC_TYPE_WEP: decryption_type = "WEP"; break;
+            case SL_SEC_TYPE_WPA_WPA2: decryption_type = "WAP/WAP2"; break;  
+            case SL_SEC_TYPE_WPS_PBC: decryption_type = "WPS PBC"; break;
+            case SL_SEC_TYPE_WPS_PIN: decryption_type = "WPS PIN"; break;
+            case SL_SEC_TYPE_WPA_ENT: decryption_type = "WPA ENT"; break; 
+            default: decryption_type = "Unkown"; break;
+        }
+        sprintf(ap_buffer, "Entry %d -- RSSI: %D, SSID: %s, Security: %s\r\n", i, netEntries[i].rssi, netEntries[i].ssid, decryption_type);
+        usart2_print(ap_buffer);
+    }
+}
