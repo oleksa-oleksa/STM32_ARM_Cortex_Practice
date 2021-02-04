@@ -240,8 +240,8 @@ void our_init_board(){
     init_POWER_ON();
 
     init_usart_2_tx_rx();
-    init_button_1();
-    init_button_2();
+    //init_button_1();
+    //init_button_2();
     
     usart2_send("\r\nNeustart\r\n");
 
@@ -939,4 +939,238 @@ void standby_mode_test() {
             while(1){;}
         }
     }
+}
+
+void start_stop_timer(TIM_TypeDef* TIMx, FunctionalState NewState) {
+    TIM_SetCounter(TIMx, 0);
+    TIM_ITConfig(TIMx, TIM_IT_Update, NewState);
+    TIM_Cmd(TIMx, NewState);
+}
+
+void init_timer_7() {
+    used_timer = USE_TIM7;
+    
+    // configure interrupt controller
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
+    
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    
+    // configure timer 7
+    TIM_TimeBaseStructure.TIM_Prescaler = 8400 - 1; // 100µs = 8400 * 1/84000000Hz 
+    TIM_TimeBaseStructure.TIM_Period = 10 - 1;   // 1ms = 10 * 100µs
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+
+
+    TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStructure);
+
+    TIM_SetCounter(TIM7, 0);
+
+    TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
+    
+    /* Assignment 9 2.2 */
+    // for this task the interrupt and timer must be enabled later on in the button 1 interrupt
+    //TIM_ITConfig(TIM7, TIM_IT_Update, ENABLE);
+    //TIM_Cmd(TIM7, ENABLE);
+ 
+}
+
+void init_timer_6() {
+    used_timer = USE_TIM6;
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+
+    TIM_TimeBaseStructure.TIM_Prescaler = 84 - 1; 
+    TIM_TimeBaseStructure.TIM_Period = 1000 - 1; 
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    
+    TIM_TimeBaseInit(TIM6, &TIM_TimeBaseStructure);
+    TIM_SetCounter(TIM6, 0);
+
+    //TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
+    
+    // enable interrupt
+    TIM_ITConfig(TIM6, TIM_IT_Update, ENABLE);
+    
+    // enable timer
+    TIM_Cmd(TIM6, ENABLE);
+ 
+}
+
+
+void init_timer_5() {
+    used_timer = USE_TIM5;
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    GPIO_StructInit(&GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
+
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM5);
+
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+
+    TIM_TimeBaseStructure.TIM_Prescaler = 8400 - 1;
+    TIM_TimeBaseStructure.TIM_Period = 10000 -1;
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+
+    TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
+
+    TIM5->CCMR1 |= TIM_CCMR1_CC2S_0;
+
+    TIM5->CCMR1 |= TIM_CCMR1_IC2F_2 + TIM_CCMR1_IC2F_1 + TIM_CCMR1_IC2F_0;
+
+    TIM5->CCER   |= TIM_CCER_CC2P;
+
+    TIM5->CCMR1   &= ~(TIM_CCMR1_IC2PSC_1 + TIM_CCMR1_IC2PSC_0);
+
+    TIM5->CCER   |= TIM_CCER_CC2E;
+
+    TIM5->DIER   |= TIM_DIER_CC2IE;
+    
+    
+    // configure interrupt controller
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    TIM_SetCounter(TIM5, 0);
+
+    // clear interrupt flag
+    TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
+    
+    // enable interrupt
+    TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
+
+    // enable timer
+    TIM_Cmd(TIM5, ENABLE);
+}
+
+void tim3_monitor_button_1_usage() {
+
+    TIM_Cmd(TIM3, DISABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+ 
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_StructInit(&GPIO_InitStructure);
+
+    // configure port line 8
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+    
+    // enable alternative function
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_TIM3);
+
+    
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+    
+    TIM3 -> CCMR1 |= TIM_CCMR1_CC1S_0 ;
+    TIM3 -> CR2 |= TIM_CR2_TI1S ;
+    
+    // polarity
+    TIM3 -> CCER |= TIM_CCER_CC1P ;
+     
+    TIM3 -> SMCR |= TIM_SMCR_SMS + TIM_SMCR_TS_2 + TIM_SMCR_ETF_0;
+    
+
+    // configure interrupt controller
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+ 
+    // configure TIM3
+    TIM_TimeBaseStructure.TIM_Prescaler = 1;
+    TIM_TimeBaseStructure.TIM_Period = 10 - 1; // interrupt gets triggered after 10 button 1 usages
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    
+    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+
+    TIM_SetCounter (TIM3, 0);
+
+    // clear flag
+    TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+    // enable interrupt
+    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+    
+    // enable timer 3
+    TIM_Cmd(TIM3, ENABLE);
+}
+
+uint32_t rand_num;
+int rand_latency;
+char rand_buffer[60];
+float durations[10];
+void reflex_test(int round) {
+    if (round < 10) {
+        rand_num = Zufallszahl();
+        rand_latency = 2000000+((int)(((float)rand_num)/100))%8000001; // between 2 and 10 sec in usec
+        wait_uSek(rand_latency);
+        LED_GR_ON;
+        reflex_round_active = 1;
+        start_stop_timer(TIM7, ENABLE);
+    } else {
+        reflex_test_runs = 0;
+        usart2_send("Reflex test is done :)\r\n");
+        int j;
+        float min = durations[0];
+        float max = durations[0];
+        float average = 0;
+        for (j=0; j<10; j++) {
+            average += durations[j];
+            if (durations[j] < min) {
+                min = durations[j];
+            }
+            if (max < durations[j]) {
+                max = durations[j];
+            }
+        }
+        average /= 10;
+        sprintf(rand_buffer, "Min: %f seconds\r\nMax: %f seconds\r\nAverage: %f seconds\r\n", min, max, average);
+		usart2_send(rand_buffer);
+    }
+}
+
+void handle_reflex_input() {
+    start_stop_timer(TIM7, DISABLE);
+    LED_GR_OFF;
+    reflex_round_active = 0;
+    durations[reflex_test_round] = (float)timer_interrupt_count/1000; // save duration in seconds (instead of msec)
+    timer_interrupt_count = 0;
+    reflex_test_round++;
+    reflex_test(reflex_test_round);
 }
