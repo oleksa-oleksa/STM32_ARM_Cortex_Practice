@@ -1279,8 +1279,8 @@ void init_DMA1_Stream6() {
     // Set DMA register in the struct
     DMA_InitStructure.DMA_Channel = DMA_Channel_5;
     DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)dma_usart2_tx;
-    DMA_InitStructure.DMA_BufferSize = (uint16_t)strlen(dma_usart2_tx);
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)usart2_tx_buffer;
+    DMA_InitStructure.DMA_BufferSize = (uint16_t)strlen(usart2_tx_buffer);
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t )&USART2->DR;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
