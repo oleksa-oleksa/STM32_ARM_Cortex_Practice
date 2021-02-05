@@ -24,7 +24,7 @@ int main(void)
 
     // Assignment 10
     // Part DMA
-    init_DMA1_Stream6();
+    //init_DMA1_Stream6();
     init_USART2_TX_DMA();
     usart2_send("\r\nNeustart UART-DMA\r\n");
 

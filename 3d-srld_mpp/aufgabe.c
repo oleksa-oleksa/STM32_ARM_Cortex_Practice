@@ -1418,6 +1418,8 @@ void usart2_send_DMA(char *buffer) {
 }
 
 void USART2_IRQHandler_DMA() {
+    usart2_send("Interrupt fired\r\n");
+
     char c;
     static int j = 0;
     if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
