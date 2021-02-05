@@ -126,6 +126,9 @@ extern int reflex_test_round;
 extern int reflex_test_runs;
 extern int reflex_round_active;
 
+extern char dma_usart2_rx[255];
+extern char dma_usart2_tx[255];
+
 
 
 //=========================================================================
@@ -207,7 +210,13 @@ void handle_reflex_input();
 // Assignment 10 DMA
 void DMA1_Stream5_IRQHandler(void);
 void DMA1_Stream6_IRQHandler(void);
-void init_DMA1_Stream6_IRQ();
+void init_DMA1_Stream5();
+void init_DMA1_Stream6();
+void init_USART2_TX_DMA();
+void usart2_send_DMA(char *buffer);
+void USART2_IRQHandler_DMA();
+
+
 
 
 //=========================================================================
