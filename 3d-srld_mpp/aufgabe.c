@@ -1418,8 +1418,6 @@ void usart2_send_DMA(char *buffer) {
 }
 
 void USART2_IRQHandler_DMA() {
-    usart2_send("Interrupt fired\r\n");
-
     char c;
     static int j = 0;
     if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
@@ -1429,10 +1427,10 @@ void USART2_IRQHandler_DMA() {
         {
             usart2_rx_buffer[j] = 0x00 ;
 
-            sprintf(usart2_tx_buffer, "\r\n", usart2_rx_buffer);
 
-            usart2_send_DMA(usart2_tx_buffer);
+            strcpy(usart2_tx_buffer, usart2_rx_buffer);
 
+            usart2_send(usart2_tx_buffer);
             memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE_50);
             j=0;
         }
@@ -1440,10 +1438,7 @@ void USART2_IRQHandler_DMA() {
         {
             usart2_rx_buffer[j] = c;
             j++;
-            if (j >= sizeof(usart2_rx_buffer))
-            {
-                j = 0;
-            }
+            if (j >= USART2_RX_BUFFERSIZE_50) { j = 0; }
         }
     }
 }
