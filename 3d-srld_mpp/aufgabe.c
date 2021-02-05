@@ -1430,7 +1430,7 @@ void USART2_IRQHandler_DMA() {
 
             strcpy(usart2_tx_buffer, usart2_rx_buffer);
 
-            usart2_send(usart2_tx_buffer);
+            usart2_send_DMA(usart2_tx_buffer);
             memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE_50);
             j=0;
         }
