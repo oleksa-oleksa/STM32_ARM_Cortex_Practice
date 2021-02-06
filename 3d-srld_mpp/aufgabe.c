@@ -1399,9 +1399,7 @@ void init_USART2_TX_DMA() {
 }
 
 void usart2_send_DMA(char *buffer) {
-
-    if (buffer)
-    {
+    if (buffer) {
         int length = strlen(buffer);
         if (length <= USART2_TX_BUFFERSIZE)
         {
