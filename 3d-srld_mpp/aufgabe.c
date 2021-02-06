@@ -1386,8 +1386,15 @@ void init_USART2_TX_DMA() {
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-
     NVIC_EnableIRQ(USART2_IRQn);
+
+    // Configure DMA2 Stream6 interrupt
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream6_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init (&NVIC_InitStructure);
+    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }
 
@@ -1426,10 +1433,7 @@ void USART2_IRQHandler_DMA() {
         if (c=='\r')	// End of string input
         {
             usart2_rx_buffer[j] = 0x00 ;
-
-
             strcpy(usart2_tx_buffer, usart2_rx_buffer);
-
             usart2_send_DMA(usart2_tx_buffer);
             memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE_50);
             j=0;
