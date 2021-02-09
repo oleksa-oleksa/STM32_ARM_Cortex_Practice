@@ -13,7 +13,7 @@ void InitSysTick(void)
 	// Bei f= 168000000Hz und Teiler 100 gibt es alle 10ms einen SysTick
 	// SysTick Intervall = (1/f) * (SystemCoreClock / 100) = 0,01 Sekunde
 	// SysTick Intervall = (1/f) * (SystemCoreClock / 1000) = 0,001 Sekunde
-	if (SysTick_Config(SystemCoreClock / 1000)) { while (1); }	// 1ms
+	if (SysTick_Config(SystemCoreClock / 100)) { while (1); }
 	}
 
 

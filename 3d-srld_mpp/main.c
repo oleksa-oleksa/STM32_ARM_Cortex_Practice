@@ -35,11 +35,11 @@ int main(void)
     while(1){
         // led_on_off();
         
-        timer = 500;
+        timer = 10;
         while (timer) {;}
         LED_GR_OFF;
 
-        timer = 3000; // 3 seconds
+        timer = 100; // 10 seconds
         while (timer) {;}
         LED_GR_ON;
     }

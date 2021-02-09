@@ -53,6 +53,8 @@ void DebugMon_Handler(void)
 //}
 
 //=========================================================================
+int init_set_done = 0;
+int32_t timer_convert = 0;
 void SysTick_Handler(void)
 {
 	static unsigned long stc_led = 0;
@@ -68,8 +70,17 @@ void SysTick_Handler(void)
     // Assignment 3: control LED with Clock System
     // TASK 3: Time delay with "timer" variable
     // blocking wait with while-loop
-
-    timer--;
+	if (!init_set_done) {
+		timer_convert = timer * 10;
+		init_set_done = 1;
+	}
+	timer_convert--;
+	if (timer_convert%10 == 0) {
+		timer--;
+	}
+	 if (timer_convert == 0) {
+		init_set_done = 0;
+	 }
 
 /*  //======================================================================
     // Assignment 3: control LED with Clock System
