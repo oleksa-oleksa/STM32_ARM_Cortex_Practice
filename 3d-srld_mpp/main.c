@@ -22,12 +22,14 @@ int main(void)
     start_RTC();
 
     // Assignment 10
-    // Part DMA
     /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
+
+    // UART
     init_USART2_TX();
     init_USART2_RX_IRQ();
     usart2_send("\r\nStarted UART-DMA\r\n");
 
+    // DMA
     init_DMA1_Stream6();
 
     while(1){
