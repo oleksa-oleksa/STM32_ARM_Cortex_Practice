@@ -22,14 +22,13 @@ char USART2_RX_BUF[USART2_BUFFERSIZE];
 int main(void)
 {
     SystemInit();
-    InitSysTick();
-    start_RTC();
 
     // Assignment 10
     /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
 
     // UART
-    init_USART2_TX_RX();
+    //init_USART2_TX_RX();
+    usart2_init();
     init_USART2_RX_IRQ();
 
     // DMA

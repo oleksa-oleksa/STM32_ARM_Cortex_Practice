@@ -1297,9 +1297,6 @@ void usart2_send_DMA(char *buffer) {
     }
 }
 
-
-
-
 //-------------------
 // Assignment 10 DMA
 
@@ -1370,8 +1367,6 @@ void init_DMA1_Stream6() {
     NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStruct);
 
-    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-
     DMA_Cmd(DMA1_Stream6, DISABLE);
     DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
 
@@ -1391,12 +1386,13 @@ void init_DMA1_Stream6() {
     DMA_InitStruct.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
     DMA_InitStruct.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStruct.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-
     DMA_Init(DMA1_Stream6, &DMA_InitStruct);
-    DMA_ITConfig(DMA1_Stream6, DMA_IT_TC, ENABLE);
-    // Now the data is transferred by the DMA
-    // when the transfer is finished, the ISR is called
-    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+    // Enable DMA interface for the USART in transmit mode
+    USART_DMACmd(USART2 , USART_DMAReq_Tx , ENABLE );
+    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+
+    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }
 
@@ -1438,24 +1434,20 @@ void USART2_IRQHandler_DMA() {
 
         if (c =='\r')	// End of string input
         {
+            // usart_running aka mutex won't be used because in this small application
+            // we fully control the behavior of UART
             // prepare buffer
             usart2_rx_buffer[j] = 0x00;
-
-            while (my_usart2_running && DMA_GetFlagStatus(DMA1_Stream6, DMA_FLAG_TCIF6) == RESET) asm("");
-            DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
-
-            // Set uart flag
-            my_usart2_running = 1;
 
             // Copy the string into the TX buffer
             strcpy(usart2_tx_buffer, usart2_rx_buffer);
 
-            // disable USART2 RX Function to avoid collision when we will transfer with DMA
-            deinit_USART2_RX();
+            // Disable the USART RXNE to avoid collision when we will transfer with DMA
+            USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
 
             int length = strlen(usart2_rx_buffer);
             // Enter the package length (nested so that only one calculation is necessary)
-            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short)length);
+            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short) length);
 
             // Activate the DMA transfer
             DMA_Cmd(DMA1_Stream6, ENABLE);
@@ -1470,18 +1462,14 @@ void USART2_IRQHandler_DMA() {
 
 void DMA1_Stream6_IRQHandler(void) {
 
-    if (DMA_GetITStatus(DMA1_Stream6 , DMA_IT_TCIF6)) {
+    //usart2_send("\r\nDMA IRQ fired\r\n");
 
-        usart2_send("\r\nDMA IRQ fired\r\n");
+    if (DMA_GetITStatus(DMA1_Stream6 , DMA_IT_TCIF6)) {
 
         DMA_ClearITPendingBit(DMA1_Stream6 , DMA_IT_TCIF6);
     }
 
-    /* we have to extern the example from the reference page on FU VPN
     DMA_ClearFlag(DMA1_Stream5, DMA_FLAG_TCIF6);
-    DMA_ClearITPendingBit(DMA1_Stream6, DMA_IT_TC);
-
-    memset(USART2_RX_BUF, 0, USART2_BUFFERSIZE);
 
     // Reenable the USART2 RXNE interrupt
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
@@ -1494,7 +1482,6 @@ void DMA1_Stream6_IRQHandler(void) {
             .USART_Mode = USART_Mode_Tx | USART_Mode_Rx
     };
     USART_Init(USART2, &USART_InitStruct);
-    */
 }
 
 void USART2_print(char *chars)
