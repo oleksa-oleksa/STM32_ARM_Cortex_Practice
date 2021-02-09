@@ -127,8 +127,8 @@ extern int reflex_test_round;
 extern int reflex_test_runs;
 extern int reflex_round_active;
 
-extern char dma_usart2_rx[255];
-extern char dma_usart2_tx[255];
+extern char USART2_TX_BUF[USART2_BUFFERSIZE];
+
 
 
 

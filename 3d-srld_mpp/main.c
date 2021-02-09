@@ -15,20 +15,22 @@ int reflex_round_active = 0;
 
 uint32_t tim3_counter;
 char buffer[60];
+char USART2_TX_BUF[USART2_BUFFERSIZE];
 
 int main(void)
 {
     SystemInit();
-    start_RTC();
 
     // Assignment 10
     /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
 
     // UART
     init_USART2_TX();
-    init_USART2_RX_IRQ();
     usart2_send("\r\nStarted UART-DMA\r\n");
 
+    init_USART2_RX_IRQ();
+
+    memset(USART2_TX_BUF, 0, USART2_BUFFERSIZE);
     // DMA
     init_DMA1_Stream6();
 

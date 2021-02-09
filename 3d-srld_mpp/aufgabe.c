@@ -16,8 +16,6 @@ int dt_flag = 0;
 int led_flag = 1;
 int alarm_type = 0;
 unsigned char my_usart2_running = 0;
-char USART2_TX_BUF[USART2_BUFFERSIZE];
-char USART2_RX_BUF[USART2_BUFFERSIZE];
 
 // sudo chmod 0777 /dev/ttyUSB0
 
@@ -1400,6 +1398,7 @@ void USART2_IRQHandler_DMA() {
         c = (char)USART_ReceiveData(USART2);
         if (c=='\r')	// End of string input
         {
+            // prepare buffer
             usart2_rx_buffer[j] = 0x00 ;
             // copy to buffer for DMA transfer
             strcpy(USART2_TX_BUF, usart2_rx_buffer);
@@ -1407,6 +1406,24 @@ void USART2_IRQHandler_DMA() {
             // clear
             memset(usart2_rx_buffer, 0x00, USART2_BUFFERSIZE);
             j=0;
+
+            // Disable the USART RXNE
+            USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+
+            // Temporarily disable the USART receiver
+            USART_InitTypeDef USART_InitStruct;
+            USART_InitStruct.USART_BaudRate = 921600;
+            USART_InitStruct.USART_WordLength = USART_WordLength_8b;
+            USART_InitStruct.USART_StopBits = USART_StopBits_1;
+            USART_InitStruct.USART_Parity = USART_Parity_No;
+            USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+            USART_InitStruct.USART_Mode = USART_Mode_Tx;
+
+            USART_Init(USART2, &USART_InitStruct);
+            USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+            // the DMA process and later receive new characters
+            DMA_Cmd(DMA1_Stream6, ENABLE);
         }
         else
         {
@@ -1419,12 +1436,25 @@ void USART2_IRQHandler_DMA() {
 
 void DMA1_Stream6_IRQHandler(void) {
 
-    if (DMA_GetITStatus(DMA1_Stream6 , DMA_IT_TCIF6)) {
+    // we have to extern the example from the reference page on FU VPN
+    DMA_ClearFlag(DMA1_Stream5, DMA_FLAG_TCIF6);
+    DMA_ClearITPendingBit(DMA1_Stream6, DMA_IT_TC);
 
-        usart2_send("\r\nDMA IRQ fired\r\n");
+    memset(USART2_TX_BUF, 0, USART2_BUFFERSIZE);
 
-        DMA_ClearITPendingBit(DMA1_Stream6 , DMA_IT_TCIF6);
-    }
+    // Reenable the USART2 RXNE interrupt
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+
+    // Temporarily disable the USART receiver
+    USART_InitTypeDef USART_InitStruct = {
+            .USART_BaudRate = 921600,
+            .USART_WordLength = USART_WordLength_8b,
+            .USART_StopBits = USART_StopBits_1,
+            .USART_Parity = USART_Parity_No,
+            .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+            .USART_Mode = USART_Mode_Tx | USART_Mode_Rx
+    };
+    USART_Init(USART2, &USART_InitStruct);
 }
 
 
