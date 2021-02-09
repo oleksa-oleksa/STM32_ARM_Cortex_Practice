@@ -19,16 +19,16 @@ char buffer[60];
 int main(void)
 {
     SystemInit();
-    InitSysTick();
     start_RTC();
 
     // Assignment 10
     // Part DMA
     /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
+    init_USART2_TX();
+    init_USART2_RX_IRQ();
+    usart2_send("\r\nStarted UART-DMA\r\n");
 
-    init_USART2_TX_DMA();
-    //init_DMA1_Stream6();
-    usart2_send("\r\nNeustart UART-DMA\r\n");
+    init_DMA1_Stream6();
 
     while(1){
 

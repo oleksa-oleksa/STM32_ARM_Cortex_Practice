@@ -1196,65 +1196,6 @@ void DMA1_Stream6_IRQHandler(void) {
     }
 }
 
-
-
-void init_DMA1_Stream6() {
-    // Configure priority group
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-
-    // Create NVIC Register Struct
-    NVIC_InitTypeDef  NVIC_InitStructure;
-
-    // Configure DMA2 Stream6 interrupt
-    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream6_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init (&NVIC_InitStructure);
-
-    // Now the DMA is configured
-    // Switch on clock system for the DMA
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1 , ENABLE );
-
-    // Reset DMA stream register
-    DMA_DeInit(DMA1_Stream6);
-
-    // Create struct for the DMA register
-    DMA_InitTypeDef   DMA_InitStructure;
-
-    // Set DMA register in the struct
-    DMA_InitStructure.DMA_Channel = DMA_Channel_5;
-    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)usart2_tx_buffer;
-    DMA_InitStructure.DMA_BufferSize = (uint16_t)strlen(usart2_tx_buffer);
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t )&USART2->DR;
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-
-    // Write values set in the struct to the DMA register
-    DMA_Init(DMA1_Stream6 , &DMA_InitStructure );
-
-    // Enable DMA interface for the USART in transmit mode
-    USART_DMACmd(USART2 , USART_DMAReq_Tx , ENABLE );
-
-    // Enable DMA stream interrupt for Transfer Complete
-    DMA_ITConfig(DMA1_Stream6 , DMA_IT_TC , ENABLE );
-
-    // Enable DMA transmit mode stream
-    DMA_Cmd(DMA1_Stream6 , ENABLE );
-
-    // Now the data is transferred by the DMA81
-    // when the transfer is finished, the ISR is called4
-}
-
 void init_USART2_TX_DMA() {
     // Prepare initialization structures
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -1433,21 +1374,56 @@ void init_USART2_TX(void)
 
 void init_USART2_RX_IRQ(void)
 {
-
-    //
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-
-    NVIC_InitTypeDef NVIC_InitStruct = {
-            .NVIC_IRQChannel = USART2_IRQn,
-            .NVIC_IRQChannelPreemptionPriority = 0xF,
-            .NVIC_IRQChannelSubPriority = 0x0,
-            .NVIC_IRQChannelCmd = ENABLE
-    };
+    NVIC_InitTypeDef NVIC_InitStruct;
+    NVIC_InitStruct.NVIC_IRQChannel = USART2_IRQn;
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0xF;
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x0;
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStruct);
-    // Using the library we activate RXNE, see page 777 in the reference manual
+
+    // activate RXNE
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
     NVIC_EnableIRQ(USART2_IRQn);
 }
+
+void init_DMA1_Stream6() {
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+    NVIC_InitTypeDef NVIC_InitStruct;
+    NVIC_InitStruct.NVIC_IRQChannel = DMA1_Stream6_IRQn;
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0xF;
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x0;
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStruct);
+
+    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+    DMA_InitTypeDef DMA_InitStruct;
+    DMA_InitStruct.DMA_Channel = DMA_Channel_4;
+    DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) &USART2->DR;
+    DMA_InitStruct.DMA_Memory0BaseAddr = (uint32_t) buf;
+    DMA_InitStruct.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    DMA_InitStruct.DMA_BufferSize = BUF_SIZE;
+    DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    DMA_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStruct.DMA_Mode = DMA_Mode_Normal;
+    DMA_InitStruct.DMA_Priority = DMA_Priority_Medium;
+    DMA_InitStruct.DMA_FIFOMode = DMA_FIFOMode_Enable;
+    DMA_InitStruct.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+    DMA_InitStruct.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+    DMA_InitStruct.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+
+    DMA_Init(DMA1_Stream6, &DMA_InitStruct);
+    DMA_ITConfig(DMA1_Stream6, DMA_IT_TC, ENABLE);
+    // Now the data is transferred by the DMA
+    // when the transfer is finished, the ISR is called
+}
+
 
 //----------------------------------
 
