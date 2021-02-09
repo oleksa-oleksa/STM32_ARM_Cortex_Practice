@@ -219,9 +219,6 @@ void USART2_IRQHandler_DMA();
 
 void init_USART2_TX_RX(void);
 void init_USART2_RX_IRQ(void);
-void USART2_print(char *chars);
-
-
 
 
 //=========================================================================

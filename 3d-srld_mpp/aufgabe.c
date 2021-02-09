@@ -1484,13 +1484,4 @@ void DMA1_Stream6_IRQHandler(void) {
     USART_Init(USART2, &USART_InitStruct);
 }
 
-void USART2_print(char *chars)
-{
-    uint16_t i = 0;
-    while (chars[i] != '\n') {
-        char c = chars[i++];
-        USART_SendData(USART2, c);
-        while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
-    }
-}
 
