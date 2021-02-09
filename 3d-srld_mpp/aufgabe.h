@@ -220,6 +220,8 @@ void USART2_IRQHandler_DMA();
 void init_USART2_TX_RX(void);
 void init_USART2_RX_IRQ(void);
 
+void list_access_points();
+
 
 //=========================================================================
 #endif

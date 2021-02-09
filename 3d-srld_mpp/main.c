@@ -23,16 +23,27 @@ int main(void)
 {
     SystemInit();
 
-    // Assignment 10
+    // Assignment 10 DMA
     /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
 
     // UART
     //init_USART2_TX_RX();
-    usart2_init();
-    init_USART2_RX_IRQ();
+    //usart2_init();
+    //init_USART2_RX_IRQ();
 
     // DMA
-    init_DMA1_Stream6();
+    //init_DMA1_Stream6();
+
+    //=============
+    // Assignment 10 WIFI
+
+    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
+    init_button_1_irq();
+    init_button_2_irq();
+    CC3100_init();
+
+    our_init_board();
+    list_access_points();
     
     while(1){
 
