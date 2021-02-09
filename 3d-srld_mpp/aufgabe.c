@@ -1441,19 +1441,27 @@ void USART2_IRQHandler_DMA() {
             // prepare buffer
             usart2_rx_buffer[j] = 0x00;
 
-            // copy to buffer for DMA transfer
+            while (my_usart2_running && DMA_GetFlagStatus(DMA1_Stream6, DMA_FLAG_TCIF6) == RESET) asm("");
+            DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
+
+            // Set uart flag
+            my_usart2_running = 1;
+
+            // Copy the string into the TX buffer
             strcpy(usart2_tx_buffer, usart2_rx_buffer);
 
             // disable USART2 RX Function to avoid collision when we will transfer with DMA
             deinit_USART2_RX();
 
-            USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
-            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short) strlen(usart2_tx_buffer));
+            int length = strlen(usart2_rx_buffer);
+            // Enter the package length (nested so that only one calculation is necessary)
+            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short)length);
 
-            // the DMA process and later receive new characters
+            // Activate the DMA transfer
             DMA_Cmd(DMA1_Stream6, ENABLE);
+            USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
 
-            // clear
+            // clear buffer
             memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE);
             j=0;
         }
@@ -1462,7 +1470,14 @@ void USART2_IRQHandler_DMA() {
 
 void DMA1_Stream6_IRQHandler(void) {
 
-    // we have to extern the example from the reference page on FU VPN
+    if (DMA_GetITStatus(DMA1_Stream6 , DMA_IT_TCIF6)) {
+
+        usart2_send("\r\nDMA IRQ fired\r\n");
+
+        DMA_ClearITPendingBit(DMA1_Stream6 , DMA_IT_TCIF6);
+    }
+
+    /* we have to extern the example from the reference page on FU VPN
     DMA_ClearFlag(DMA1_Stream5, DMA_FLAG_TCIF6);
     DMA_ClearITPendingBit(DMA1_Stream6, DMA_IT_TC);
 
@@ -1479,6 +1494,7 @@ void DMA1_Stream6_IRQHandler(void) {
             .USART_Mode = USART_Mode_Tx | USART_Mode_Rx
     };
     USART_Init(USART2, &USART_InitStruct);
+    */
 }
 
 void USART2_print(char *chars)
