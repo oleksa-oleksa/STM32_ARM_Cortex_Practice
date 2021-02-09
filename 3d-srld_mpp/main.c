@@ -24,6 +24,8 @@ int main(void)
 
     // Assignment 10
     // Part DMA
+    /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
+
     init_USART2_TX_DMA();
     //init_DMA1_Stream6();
     usart2_send("\r\nNeustart UART-DMA\r\n");

@@ -1447,7 +1447,6 @@ void USART2_IRQHandler_DMA() {
     }
 }
 
-
 void init_USART2_TX_DMA_swp() {
     // Prepare initialization structures
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -1535,3 +1534,5 @@ void init_USART2_TX_DMA_swp() {
     NVIC_Init (&NVIC_InitStructure);
     NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 }
+
+
