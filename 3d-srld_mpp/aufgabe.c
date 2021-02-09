@@ -1335,7 +1335,8 @@ void init_USART2_TX(void)
     USART_Cmd(USART2, ENABLE);
     USART_Init(USART2, &USART_InitStructure);
 
-    while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
+
+    //while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
 }
 
 void init_USART2_RX_IRQ(void)
@@ -1366,6 +1367,9 @@ void init_DMA1_Stream6() {
     NVIC_Init(&NVIC_InitStruct);
 
     NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+    DMA_Cmd(DMA1_Stream6, DISABLE);
+    DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
 
     DMA_InitTypeDef DMA_InitStruct;
     DMA_InitStruct.DMA_Channel = DMA_Channel_4;
@@ -1405,22 +1409,31 @@ void deinit_USART2_RX() {
     USART_InitStruct.USART_Mode = USART_Mode_Tx;
 
     USART_Init(USART2, &USART_InitStruct);
-    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
-
-    // the DMA process and later receive new characters
-    DMA_Cmd(DMA1_Stream6, ENABLE);
 }
 
 void USART2_IRQHandler_DMA() {
     char c;
     static int j = 0;
+
     if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
     {
         c = (char)USART_ReceiveData(USART2);
-        if (c=='\r')	// End of string input
+
+        USART_ClearFlag(USART2, USART_FLAG_RXNE);
+        USART_ClearITPendingBit(USART2, USART_IT_RXNE);
+
+        // each chat fires interrupt
+        // collect string char by char before the EOL comes
+        if (c != '\r') {
+            USART2_RX_BUF[j] = c;
+            j++;
+            if (j >= USART2_BUFFERSIZE) { j = 0; }
+        }
+
+        if (c =='\r')	// End of string input
         {
             // prepare buffer
-            USART2_RX_BUF[j] = 0x00 ;
+            USART2_RX_BUF[j] = 0x00;
             // copy to buffer for DMA transfer
             strcpy(USART2_TX_BUF, USART2_RX_BUF);
 
@@ -1430,14 +1443,12 @@ void USART2_IRQHandler_DMA() {
 
             // disable USART2 RX Function to avoid collision when we will transfer with DMA
             deinit_USART2_RX();
-            // USART2 will be enabled in DMA ISR
 
-        }
-        else
-        {
-            USART2_RX_BUF[j] = c;
-            j++;
-            if (j >= USART2_BUFFERSIZE) { j = 0; }
+            USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+            // the DMA process and later receive new characters
+            DMA_Cmd(DMA1_Stream6, ENABLE);
+
         }
     }
 }
@@ -1448,12 +1459,10 @@ void DMA1_Stream6_IRQHandler(void) {
     DMA_ClearFlag(DMA1_Stream5, DMA_FLAG_TCIF6);
     DMA_ClearITPendingBit(DMA1_Stream6, DMA_IT_TC);
 
-    memset(USART2_TX_BUF, 0, USART2_BUFFERSIZE);
+    memset(USART2_RX_BUF, 0, USART2_BUFFERSIZE);
 
     // Reenable the USART2 RXNE interrupt
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-
-    // Temporarily disable the USART receiver
     USART_InitTypeDef USART_InitStruct = {
             .USART_BaudRate = 921600,
             .USART_WordLength = USART_WordLength_8b,
