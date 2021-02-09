@@ -15,33 +15,38 @@ int reflex_round_active = 0;
 
 uint32_t tim3_counter;
 char buffer[60];
+char USART2_TX_BUF[USART2_BUFFERSIZE];
+char USART2_RX_BUF[USART2_BUFFERSIZE];
+
 
 int main(void)
 {
     SystemInit();
-    InitSysTick();
-    start_RTC();
+
+    // Assignment 10 DMA
+    /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
+
+    // UART
+    //init_USART2_TX_RX();
+    //usart2_init();
+    //init_USART2_RX_IRQ();
+
+    // DMA
+    //init_DMA1_Stream6();
+
+    //=============
+    // Assignment 10 WIFI
 
     init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
     init_button_1_irq();
     init_button_2_irq();
+    CC3100_init();
 
     our_init_board();
+    list_access_points();
     
-    // assignment 9 task 2.2
-    init_timer_7();
-    // assignment 9 task 2.3
-    //tim3_monitor_button_1_usage();
-
-
     while(1){
-        // assignment 9 task 2.3
-        /*
-        tim3_counter = TIM_GetCounter(TIM3);
-		sprintf(buffer, "Button 1 was pressed %u times\r\n", tim3_counter);    
-        usart2_send(buffer);
-        wait_mSek(2000);
-        */
+
     }
-    return 0; // to make the warning stop
+    return 0;
 }

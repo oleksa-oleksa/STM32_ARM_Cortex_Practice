@@ -474,7 +474,7 @@ void USART2_IRQHandler(void)
 {
     //===== USART2
     // uncomment to detect interrupt is fired
-    //usart2_send("USART2_IRQn\r\n");
+    usart2_send("USART2_IRQn\r\n");
     // original function
     //USART2_IRQ();
 
@@ -488,6 +488,7 @@ void USART2_IRQHandler(void)
     //USART2_GET_DATATIME();
 
 	// Assignment 9: start reflex test
+	/*
 	input = (char)USART_ReceiveData(USART2);
 	if (!reflex_test_runs && input == 's') {
 		usart2_send("Start reflex test\r\n");
@@ -495,6 +496,11 @@ void USART2_IRQHandler(void)
 		reflex_test_round = 0;
 		reflex_test(reflex_test_round);
 	}
+	*/
+
+    // Assignment 10
+    // here we get the string from serial
+    USART2_IRQHandler_DMA();
 }
 //=========================================================================
 void UART5_IRQHandler(void)

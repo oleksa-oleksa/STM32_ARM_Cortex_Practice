@@ -100,6 +100,7 @@
 #define GR_LED_OFF (GPIO_ResetBits(GPIOB, GPIO_Pin_2))
 #define USART2_TX_BUFFERSIZE_50 50
 #define USART2_RX_BUFFERSIZE_50 1024
+#define USART2_BUFFERSIZE 1024
 
 #define RTC_MONDAY_ALARM 1
 #define RTC_THRIDS_ALARM 2
@@ -125,6 +126,9 @@ extern int timer_runs;
 extern int reflex_test_round;
 extern int reflex_test_runs;
 extern int reflex_round_active;
+
+extern char USART2_TX_BUF[USART2_BUFFERSIZE];
+extern char USART2_RX_BUF[USART2_BUFFERSIZE];
 
 
 
@@ -203,6 +207,20 @@ void start_stop_timer(TIM_TypeDef* TIMx, FunctionalState NewState);
 void tim3_monitor_button_1_usage();
 void reflex_test();
 void handle_reflex_input();
+
+// Assignment 10 DMA
+void DMA1_Stream5_IRQHandler(void);
+void DMA1_Stream6_IRQHandler(void);
+void init_DMA1_Stream5();
+void init_DMA1_Stream6();
+void init_USART2_TX_DMA();
+void usart2_send_DMA(char *buffer);
+void USART2_IRQHandler_DMA();
+
+void init_USART2_TX_RX(void);
+void init_USART2_RX_IRQ(void);
+
+void list_access_points();
 
 
 //=========================================================================

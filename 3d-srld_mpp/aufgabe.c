@@ -5,6 +5,8 @@
 GPIO_InitTypeDef GPIO_InitStructure;
 char usart2_tx_buffer[USART2_TX_BUFFERSIZE_50];
 char usart2_rx_buffer[USART2_RX_BUFFERSIZE_50];
+char dma_usart2_rx[255];
+char dma_usart2_tx[255];
 unsigned char usart2_busy = 0;
 int led_timer = 1000;
 char date_buf[5];
@@ -13,7 +15,7 @@ int time_flag = 0;
 int dt_flag = 0;
 int led_flag = 1;
 int alarm_type = 0;
-
+unsigned char my_usart2_running = 0;
 
 // sudo chmod 0777 /dev/ttyUSB0
 
@@ -237,7 +239,7 @@ void init_iwdg() { // configure to count 5 secs
 }
 
 void our_init_board(){
-    init_POWER_ON();
+    //init_POWER_ON();
 
     init_usart_2_tx_rx();
     //init_button_1();
@@ -873,7 +875,7 @@ void stop_mode_test() {
                 // The Stop mode is entered using the PWR_EnterSTOPMode
                 // The voltage regulator can be configured either in normal or low-power mode.
                 // STOP mode in entered with WFI instruction
-                PWR_EnterSTOPMode(PWR_Regulator_ON, PWR_STOPEntry_WFI);
+                PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
                 wait_uSek(300000);
 
                 usart2_send("LED OFF, stop finished\r\n");
@@ -1174,3 +1176,373 @@ void handle_reflex_input() {
     reflex_test_round++;
     reflex_test(reflex_test_round);
 }
+
+void DMA1_Stream5_IRQHandler(void) {
+
+    if (DMA_GetITStatus(DMA1_Stream5 , DMA_IT_TCIF5)) {
+
+        DMA_ClearITPendingBit(DMA1_Stream5 , DMA_IT_TCIF5 );
+    }
+}
+
+void init_USART2_TX_DMA() {
+    // Prepare initialization structures
+    GPIO_InitTypeDef GPIO_InitStructure;
+    USART_InitTypeDef USART_InitStructure;
+    DMA_InitTypeDef DMA_InitStructure;
+
+    // Activate clock system
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+
+    // GPIOA Configuration: USART2 TX on PA2 RX on PA3
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    // Define alternative function
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
+
+    // USART initialize
+    USART_InitStructure.USART_BaudRate = 921600;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(USART2, &USART_InitStructure);
+
+    // Deinitialize the DMA
+    DMA_DeInit(DMA1_Stream6); //USART2_TX_DMA_STREAM
+
+    // Structure auf default setzen
+    DMA_StructInit(&DMA_InitStructure);
+
+    // Deaktiviere den DMA Transfer
+    DMA_Cmd(DMA1_Stream6, DISABLE);
+
+    //// Lösche das DMA-Flag
+    DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
+
+    // Set DMA register in the struct
+    DMA_InitStructure.DMA_Channel = DMA_Channel_4;
+    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)USART2_TX_BUF;
+    DMA_InitStructure.DMA_BufferSize = USART2_BUFFERSIZE;
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t )&USART2->DR;
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+    DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+    DMA_Init(DMA1_Stream6, &DMA_InitStructure);
+
+    // Fordere RX und TX an
+    //USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+
+    // USART Deaktivieren
+    USART_Cmd(USART2, ENABLE);
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    NVIC_EnableIRQ(USART2_IRQn);
+
+    // Configure DMA2 Stream6 interrupt
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream6_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init (&NVIC_InitStructure);
+    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+}
+
+void usart2_send_DMA(char *buffer) {
+    if (buffer) {
+        int length = strlen(buffer);
+        if (length <= USART2_TX_BUFFERSIZE)
+        {
+            // Wait for the last transfer to complete
+            while (my_usart2_running && DMA_GetFlagStatus(DMA1_Stream6, DMA_FLAG_TCIF6) == RESET) asm("");
+            DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
+
+            // Set uart flag
+            my_usart2_running = 1;
+
+            // Copy the string into the TX buffer
+            strcpy(usart2_tx_buffer, buffer);
+
+            // Enter the package length (nested so that only one calculation is necessary)
+            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short)length);
+
+            // Activate the DMA transfer
+            DMA_Cmd(DMA1_Stream6, ENABLE);
+        }
+    }
+}
+
+//-------------------
+// Assignment 10 DMA
+
+void init_USART2_TX_RX(void)
+{
+
+    // Activate clock system
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+
+    // configure GPIO
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* Configure USART Pins */
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
+
+
+    // USART init
+    USART_InitTypeDef USART_InitStructure;
+    USART_InitStructure.USART_BaudRate = 921600;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(USART2, &USART_InitStructure);
+
+    USART_Init(USART2, &USART_InitStructure);
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+    USART_Cmd(USART2, ENABLE);
+
+    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+    //while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
+}
+
+void init_USART2_RX_IRQ(void)
+{
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+    NVIC_InitTypeDef NVIC_InitStruct;
+    NVIC_InitStruct.NVIC_IRQChannel = USART2_IRQn;
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0xF;
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x0;
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStruct);
+
+    // activate RXNE
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+    NVIC_EnableIRQ(USART2_IRQn);
+}
+
+void init_DMA1_Stream6() {
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    NVIC_InitTypeDef NVIC_InitStruct;
+    NVIC_InitStruct.NVIC_IRQChannel = DMA1_Stream6_IRQn;
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0xF;
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x0;
+    NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStruct);
+
+    DMA_Cmd(DMA1_Stream6, DISABLE);
+    DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6);
+
+    DMA_InitTypeDef DMA_InitStruct;
+    DMA_InitStruct.DMA_Channel = DMA_Channel_4;
+    DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) &USART2->DR;
+    DMA_InitStruct.DMA_Memory0BaseAddr = (uint32_t) usart2_tx_buffer;
+    DMA_InitStruct.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    DMA_InitStruct.DMA_BufferSize = USART2_TX_BUFFERSIZE;
+    DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    DMA_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStruct.DMA_Mode = DMA_Mode_Normal;
+    DMA_InitStruct.DMA_Priority = DMA_Priority_Medium;
+    DMA_InitStruct.DMA_FIFOMode = DMA_FIFOMode_Enable;
+    DMA_InitStruct.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+    DMA_InitStruct.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+    DMA_InitStruct.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+    DMA_Init(DMA1_Stream6, &DMA_InitStruct);
+
+    // Enable DMA interface for the USART in transmit mode
+    USART_DMACmd(USART2 , USART_DMAReq_Tx , ENABLE );
+    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+
+    NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+}
+
+void deinit_USART2_RX() {
+
+    // Disable the USART RXNE
+    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+
+    // Disable the USART receiver
+    USART_InitTypeDef USART_InitStruct;
+    USART_InitStruct.USART_BaudRate = 921600;
+    USART_InitStruct.USART_WordLength = USART_WordLength_8b;
+    USART_InitStruct.USART_StopBits = USART_StopBits_1;
+    USART_InitStruct.USART_Parity = USART_Parity_No;
+    USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStruct.USART_Mode = USART_Mode_Tx;
+
+    USART_Init(USART2, &USART_InitStruct);
+}
+
+void USART2_IRQHandler_DMA() {
+    char c;
+    static int j = 0;
+
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        c = (char)USART_ReceiveData(USART2);
+
+        USART_ClearFlag(USART2, USART_FLAG_RXNE);
+        USART_ClearITPendingBit(USART2, USART_IT_RXNE);
+
+        // each chat fires interrupt
+        // collect string char by char before the EOL comes
+        if (c != '\r') {
+            usart2_rx_buffer[j] = c;
+            j++;
+            if (j >= USART2_BUFFERSIZE) { j = 0; }
+        }
+
+        if (c =='\r')	// End of string input
+        {
+            // usart_running aka mutex won't be used because in this small application
+            // we fully control the behavior of UART
+            // prepare buffer
+            usart2_rx_buffer[j] = 0x00;
+
+            // Copy the string into the TX buffer
+            strcpy(usart2_tx_buffer, usart2_rx_buffer);
+
+            // Disable the USART RXNE to avoid collision when we will transfer with DMA
+            USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+
+            int length = strlen(usart2_rx_buffer);
+            // Enter the package length (nested so that only one calculation is necessary)
+            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short) length);
+
+            // Activate the DMA transfer
+            DMA_Cmd(DMA1_Stream6, ENABLE);
+            USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+            // clear buffer
+            memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE);
+            j=0;
+        }
+    }
+}
+
+void DMA1_Stream6_IRQHandler(void) {
+
+    //usart2_send("\r\nDMA IRQ fired\r\n");
+
+    if (DMA_GetITStatus(DMA1_Stream6 , DMA_IT_TCIF6)) {
+
+        DMA_ClearITPendingBit(DMA1_Stream6 , DMA_IT_TCIF6);
+    }
+
+    DMA_ClearFlag(DMA1_Stream5, DMA_FLAG_TCIF6);
+
+    // Reenable the USART2 RXNE interrupt
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+    USART_InitTypeDef USART_InitStruct = {
+            .USART_BaudRate = 921600,
+            .USART_WordLength = USART_WordLength_8b,
+            .USART_StopBits = USART_StopBits_1,
+            .USART_Parity = USART_Parity_No,
+            .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+            .USART_Mode = USART_Mode_Tx | USART_Mode_Rx
+    };
+    USART_Init(USART2, &USART_InitStruct);
+}
+
+
+/* assignment 10 task 4.2 */
+// based on sample code from http://hwp.mi.fu-berlin.de/intern/STM32/09020100.php
+int i = 0;                              // index
+char ap_buffer[100]={0};                // print buffer
+int valid = 0;                          // numer of received wifi aps
+Sl_WlanNetworkEntry_t netEntries[20];   // received wifi aps
+char *decryption_type;                    // decryption type 
+int RetVal = -1;                        // error code
+_u32 interval = 1;                      // scan duration in seconds
+
+void list_access_points() {
+ 
+    // start wifi tranceiver
+    RetVal = sl_Start(NULL, NULL, NULL);
+    if (RetVal == -1) {
+        usart2_print("Error while starting wifi tranceiver!");
+        return;
+    }
+ 
+    // enable wifi scan
+    RetVal = sl_WlanPolicySet(SL_POLICY_SCAN , 1, (_u8 *)&interval, sizeof(interval));
+    if (RetVal == -1) {
+        usart2_print("Error while enabling wifi scan!");
+        return;
+    }
+ 
+    // obtaining list of wifi aps
+    // retry in case of finding less then 5 
+    while (valid < 5)
+    {
+        valid = sl_WlanGetNetworkList(0, 20, &netEntries[0]);
+        if (valid == -1) {
+        usart2_print("Error while scanning for access points!");
+        }   
+        wait_mSek(500);
+    }
+
+    sprintf(ap_buffer, "%d valid access points found!\r\n", valid);
+    usart2_print(ap_buffer);
+     
+    // stop wifi tranceiver
+    sl_Stop(100);
+     
+    // print list of available wifi aps
+    for (i=0; i< valid && i<20; i++)
+    {
+        // get decryption type (string) based on set sec_type value
+        switch(netEntries[i].sec_type) {
+            case SL_SEC_TYPE_OPEN: decryption_type = "Open"; break;
+            case SL_SEC_TYPE_WEP: decryption_type = "WEP"; break;
+            case SL_SEC_TYPE_WPA_WPA2: decryption_type = "WAP/WAP2"; break;  
+            case SL_SEC_TYPE_WPS_PBC: decryption_type = "WPS PBC"; break;
+            case SL_SEC_TYPE_WPS_PIN: decryption_type = "WPS PIN"; break;
+            case SL_SEC_TYPE_WPA_ENT: decryption_type = "WPA ENT"; break; 
+            default: decryption_type = "Unkown"; break;
+        }
+        sprintf(ap_buffer, "Entry %d -- RSSI: %D, SSID: %s, Security: %s\r\n", i, netEntries[i].rssi, netEntries[i].ssid, decryption_type);
+        usart2_print(ap_buffer);
+    }
+}
+
