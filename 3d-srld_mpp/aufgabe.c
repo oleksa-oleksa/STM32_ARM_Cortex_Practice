@@ -1303,23 +1303,26 @@ void usart2_send_DMA(char *buffer) {
 //-------------------
 // Assignment 10 DMA
 
-void init_USART2_TX(void)
+void init_USART2_TX_RX(void)
 {
-    /* Enable GPIO port */
+
+    // Activate clock system
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-    GPIO_InitTypeDef GPIO_InitStruct;
     // configure GPIO
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Configure USART */
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    /* Configure USART Pins */
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
+
 
     // USART init
     USART_InitTypeDef USART_InitStructure;
@@ -1328,13 +1331,14 @@ void init_USART2_TX(void)
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
     USART_InitStructure.USART_Parity = USART_Parity_No;
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    USART_InitStructure.USART_Mode = USART_Mode_Tx;
+    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
     USART_Init(USART2, &USART_InitStructure);
 
-
+    USART_Init(USART2, &USART_InitStructure);
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
     USART_Cmd(USART2, ENABLE);
-    USART_Init(USART2, &USART_InitStructure);
 
+    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
 
     //while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
 }
@@ -1374,9 +1378,9 @@ void init_DMA1_Stream6() {
     DMA_InitTypeDef DMA_InitStruct;
     DMA_InitStruct.DMA_Channel = DMA_Channel_4;
     DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t) &USART2->DR;
-    DMA_InitStruct.DMA_Memory0BaseAddr = (uint32_t) USART2_TX_BUF;
+    DMA_InitStruct.DMA_Memory0BaseAddr = (uint32_t) usart2_tx_buffer;
     DMA_InitStruct.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStruct.DMA_BufferSize = USART2_BUFFERSIZE;
+    DMA_InitStruct.DMA_BufferSize = USART2_TX_BUFFERSIZE;
     DMA_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
@@ -1392,6 +1396,8 @@ void init_DMA1_Stream6() {
     DMA_ITConfig(DMA1_Stream6, DMA_IT_TC, ENABLE);
     // Now the data is transferred by the DMA
     // when the transfer is finished, the ISR is called
+    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
 }
 
 void deinit_USART2_RX() {
@@ -1425,7 +1431,7 @@ void USART2_IRQHandler_DMA() {
         // each chat fires interrupt
         // collect string char by char before the EOL comes
         if (c != '\r') {
-            USART2_RX_BUF[j] = c;
+            usart2_rx_buffer[j] = c;
             j++;
             if (j >= USART2_BUFFERSIZE) { j = 0; }
         }
@@ -1433,12 +1439,13 @@ void USART2_IRQHandler_DMA() {
         if (c =='\r')	// End of string input
         {
             // prepare buffer
-            USART2_RX_BUF[j] = 0x00;
+            usart2_rx_buffer[j] = 0x00;
+
             // copy to buffer for DMA transfer
-            strcpy(USART2_TX_BUF, USART2_RX_BUF);
+            strcpy(usart2_tx_buffer, usart2_rx_buffer);
 
             // clear
-            memset(USART2_RX_BUF, 0x00, USART2_BUFFERSIZE);
+            memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE);
             j=0;
 
             // disable USART2 RX Function to avoid collision when we will transfer with DMA
@@ -1474,4 +1481,13 @@ void DMA1_Stream6_IRQHandler(void) {
     USART_Init(USART2, &USART_InitStruct);
 }
 
+void USART2_print(char *chars)
+{
+    uint16_t i = 0;
+    while (chars[i] != '\n') {
+        char c = chars[i++];
+        USART_SendData(USART2, c);
+        while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
+    }
+}
 

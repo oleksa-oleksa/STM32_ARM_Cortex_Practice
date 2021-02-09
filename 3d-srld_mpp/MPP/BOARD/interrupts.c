@@ -474,7 +474,7 @@ void USART2_IRQHandler(void)
 {
     //===== USART2
     // uncomment to detect interrupt is fired
-    //usart2_send("USART2_IRQn\r\n");
+    usart2_send("USART2_IRQn\r\n");
     // original function
     //USART2_IRQ();
 
