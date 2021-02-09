@@ -1390,6 +1390,27 @@ void init_DMA1_Stream6() {
     // when the transfer is finished, the ISR is called
 }
 
+void deinit_USART2_RX() {
+
+    // Disable the USART RXNE
+    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+
+    // Disable the USART receiver
+    USART_InitTypeDef USART_InitStruct;
+    USART_InitStruct.USART_BaudRate = 921600;
+    USART_InitStruct.USART_WordLength = USART_WordLength_8b;
+    USART_InitStruct.USART_StopBits = USART_StopBits_1;
+    USART_InitStruct.USART_Parity = USART_Parity_No;
+    USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStruct.USART_Mode = USART_Mode_Tx;
+
+    USART_Init(USART2, &USART_InitStruct);
+    USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+
+    // the DMA process and later receive new characters
+    DMA_Cmd(DMA1_Stream6, ENABLE);
+}
+
 void USART2_IRQHandler_DMA() {
     char c;
     static int j = 0;
@@ -1399,35 +1420,22 @@ void USART2_IRQHandler_DMA() {
         if (c=='\r')	// End of string input
         {
             // prepare buffer
-            usart2_rx_buffer[j] = 0x00 ;
+            USART2_RX_BUF[j] = 0x00 ;
             // copy to buffer for DMA transfer
-            strcpy(USART2_TX_BUF, usart2_rx_buffer);
+            strcpy(USART2_TX_BUF, USART2_RX_BUF);
 
             // clear
-            memset(usart2_rx_buffer, 0x00, USART2_BUFFERSIZE);
+            memset(USART2_RX_BUF, 0x00, USART2_BUFFERSIZE);
             j=0;
 
-            // Disable the USART RXNE
-            USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+            // disable USART2 RX Function to avoid collision when we will transfer with DMA
+            deinit_USART2_RX();
+            // USART2 will be enabled in DMA ISR
 
-            // Temporarily disable the USART receiver
-            USART_InitTypeDef USART_InitStruct;
-            USART_InitStruct.USART_BaudRate = 921600;
-            USART_InitStruct.USART_WordLength = USART_WordLength_8b;
-            USART_InitStruct.USART_StopBits = USART_StopBits_1;
-            USART_InitStruct.USART_Parity = USART_Parity_No;
-            USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-            USART_InitStruct.USART_Mode = USART_Mode_Tx;
-
-            USART_Init(USART2, &USART_InitStruct);
-            USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
-
-            // the DMA process and later receive new characters
-            DMA_Cmd(DMA1_Stream6, ENABLE);
         }
         else
         {
-            usart2_rx_buffer[j] = c;
+            USART2_RX_BUF[j] = c;
             j++;
             if (j >= USART2_BUFFERSIZE) { j = 0; }
         }

@@ -25,12 +25,14 @@ int main(void)
     /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
 
     // UART
+    memset(USART2_TX_BUF, 0, USART2_BUFFERSIZE);
+    memset(USART2_RX_BUF, 0, USART2_BUFFERSIZE);
+
     init_USART2_TX();
     usart2_send("\r\nStarted UART-DMA\r\n");
 
     init_USART2_RX_IRQ();
 
-    memset(USART2_TX_BUF, 0, USART2_BUFFERSIZE);
     // DMA
     init_DMA1_Stream6();
 
