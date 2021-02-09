@@ -1361,7 +1361,7 @@ void init_USART2_RX_IRQ(void)
 void init_DMA1_Stream6() {
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
 
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
     NVIC_InitTypeDef NVIC_InitStruct;
     NVIC_InitStruct.NVIC_IRQChannel = DMA1_Stream6_IRQn;
@@ -1444,18 +1444,18 @@ void USART2_IRQHandler_DMA() {
             // copy to buffer for DMA transfer
             strcpy(usart2_tx_buffer, usart2_rx_buffer);
 
-            // clear
-            memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE);
-            j=0;
-
             // disable USART2 RX Function to avoid collision when we will transfer with DMA
             deinit_USART2_RX();
 
             USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
+            DMA_SetCurrDataCounter(DMA1_Stream6, (unsigned short) strlen(usart2_tx_buffer));
 
             // the DMA process and later receive new characters
             DMA_Cmd(DMA1_Stream6, ENABLE);
 
+            // clear
+            memset(usart2_rx_buffer, 0x00, USART2_RX_BUFFERSIZE);
+            j=0;
         }
     }
 }

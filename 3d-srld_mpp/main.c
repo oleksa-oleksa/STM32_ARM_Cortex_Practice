@@ -31,11 +31,10 @@ int main(void)
     // UART
     init_USART2_TX_RX();
     init_USART2_RX_IRQ();
-    usart2_send("\r\nNeustart\r\n");
 
     // DMA
     init_DMA1_Stream6();
-
+    
     while(1){
 
     }
