@@ -110,6 +110,7 @@
 #define USE_TIM6 6
 #define USE_TIM7 7
 
+#define STACK_SIZE 128
 
 
 //=========================================================================
@@ -221,6 +222,9 @@ void init_USART2_TX_RX(void);
 void init_USART2_RX_IRQ(void);
 
 void list_access_points();
+
+// Assigment 11
+void create_tasks();
 
 
 //=========================================================================

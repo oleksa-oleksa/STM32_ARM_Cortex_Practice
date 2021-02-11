@@ -1546,3 +1546,29 @@ void list_access_points() {
     }
 }
 
+
+OS_STK task_1_stack[STACK_SIZE];
+OS_STK task_2_stack[STACK_SIZE];
+
+// asignment 11
+void task_1() {
+    while(1) {
+        LED_GR_ON;
+        wait_mSek(500);
+        LED_GR_OFF;
+        wait_mSek(500);
+    }
+}
+
+void task_2() {
+    while(1) {
+        usart2_send("*");
+        wait_mSek(2000);
+    }
+}
+
+
+void create_tasks() {
+    CoCreateTask(task_1, 0, 0, &task_1_stack[STACK_SIZE-1], STACK_SIZE);
+    CoCreateTask(task_2, 0, 0, &task_2_stack[STACK_SIZE-1], STACK_SIZE) ;
+}

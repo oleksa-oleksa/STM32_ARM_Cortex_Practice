@@ -22,31 +22,13 @@ char USART2_RX_BUF[USART2_BUFFERSIZE];
 int main(void)
 {
     SystemInit();
-
-    // Assignment 10 DMA
-    /* for the Assignment 10 - DMA we will use USART Init Function and DMA Init function */
-
-    // UART
-    //init_USART2_TX_RX();
-    //usart2_init();
-    //init_USART2_RX_IRQ();
-
-    // DMA
-    //init_DMA1_Stream6();
-
-    //=============
-    // Assignment 10 WIFI
-
-    init_leds(RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_2);
-    init_button_1_irq();
-    init_button_2_irq();
-    CC3100_init();
-
-    our_init_board();
-    list_access_points();
+    init_board();
+    start_RTC();
+    InitSysTick();
+    CoInitOS();
+    create_tasks();
+    CoStartOS();
     
-    while(1){
-
-    }
+    while(1){;}
     return 0;
 }

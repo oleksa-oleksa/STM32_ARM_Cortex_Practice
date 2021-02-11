@@ -62,6 +62,7 @@ void DebugMon_Handler(void)
 //=========================================================================
 void SysTick_Handler(void)
 {
+	CoOS_SysTick_Handler ();
 	static unsigned long stc_led = 0;
 	static unsigned long stc0 = 0;
 	static unsigned long stc1 = 0;

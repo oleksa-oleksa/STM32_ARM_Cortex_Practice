@@ -33,6 +33,7 @@ void CoIdleTask(void* pdata)
     /* Add your codes here */
     for(; ;) 
     {
+        asm("nop");
         /* Add your codes here */
     }
 }
